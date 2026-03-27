@@ -22,8 +22,44 @@ const pool = new Pool({
   port: Number(process.env.DB_PORT)
 });
 
-app.get("/pokemon", (req, res) => {
-  res.json({ status: "success!", pokemon: [] });
+app.get("/pokemon/:id", async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query("SELECT * FROM Pokemon WHERE id = $1", [req.params.id]);
+    res.json({ status: "success", pokemon: result.rows[0] });
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ status: "failure", error: "Failed to fetch Pokemon" });
+  }
+});
+
+app.get("/pokemon", async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query("SELECT * FROM Pokemon");
+    res.json({ status: "success", pokemon: result.rows });
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ status: "failure", error: "Failed to fetch Pokemon" });
+  }
+});
+
+app.get("/moves/:id", async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query("SELECT * FROM Moves WHERE id = $1", [req.params.id]);
+    res.json({ status: "success", move: result.rows[0] });
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ status: "failure", error: "Failed to fetch Move" });
+  }
+});
+
+app.get("/moves", async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query("SELECT * FROM Moves");
+    res.json({ status: "success", moves: result.rows });
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ status: "failure", error: "Failed to fetch Moves" });
+  }
 });
 
 app.listen(port, () => {
