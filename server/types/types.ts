@@ -1,4 +1,5 @@
-interface Pokemon {
+export interface Pokemon {
+  id: number;
   name: string;
   generation: string;
   hp: number | null;
@@ -21,7 +22,7 @@ interface Pokemon {
   moves: Array<Move>;
 }
 
-interface Move {
+export interface Move {
   id: number;
   name: string;
   type: string;
