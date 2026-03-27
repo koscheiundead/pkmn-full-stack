@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import axios from "axios";
 import { ref, onMounted } from "vue";
-import type { Pokemon } from "../../server/types/types.ts";
+import type { Pokemon } from "../../shared/types.ts";
 
 const error = ref(null);
 const pokemon = ref<Array<Pokemon>>([]);
