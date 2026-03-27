@@ -46,11 +46,15 @@ pkmnCsv.pipe(parse({
   pokemonList.push(data);
 }).on('end', async () => {
   await pool.query(pkmnSeed);
-  for (const pokemon f pokemonList) {
+  for (const pokemon of pokemonList) {
+    const vals = [pokemon.id, pokemon.name, pokemon.generation, pokemon.hp, pokemon.attack, pokemon.defense,
+      pokemon.special_attack, pokemon.special_defense, pokemon.speed, pokemon.primary_type, pokemon.secondary_type,
+      pokemon.ability_i, pokemon.ability_ii, pokemon.hidden_ability, pokemon.ev_worth, pokemon.gender, pokemon.egg_group_i,
+      pokemon.egg_group_ii, pokemon.catch, pokemon.evolve];
     await pool.query(`INSERT INTO Pokemon(id, name, generation, hp, attack, defense,
       special_attack, special_defense, speed, primary_type, secondary_type,
       ability_i, ability_ii, hidden_ability, ev_worth, gender, egg_group_i,
-      egg_group_ii, catch, evolve) VALUES [$1, $2, $3, $4, $5, $6, $7, $8, $9,
-      $10, $11, $12, $13, $14, $15, $16, $17, $18, $19]`, [...pokemon])
+      egg_group_ii, catch, evolve) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9,
+      $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)`, vals);
   }
 });
