@@ -49,9 +49,9 @@ export interface Move {
   name: string;
   type: string;
   category: "physical" | "special" | "status";
+  pp: number;
   power: number | null;
   accuracy: number | null;
-  pp: number;
+  range: string | null;
   effect: string;
-  probability: number | null;
 }

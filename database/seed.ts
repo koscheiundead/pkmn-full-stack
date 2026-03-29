@@ -50,11 +50,11 @@ const moveSeed = `CREATE TABLE IF NOT EXISTS Moves (id SERIAL PRIMARY KEY,
 name TEXT NOT NULL,
 type TEXT NOT NULL,
 category TEXT,
-power INTEGER,
-accuracy INTEGER,
 pp INTEGER,
-effect TEXT,
-probability INTEGER);`;
+power INTEGER,
+accuracy REAL,
+range TEXT,
+effect TEXT);`;
 
 const pkmnMovesSeed = `CREATE TABLE IF NOT EXISTS Pokemon_Moves (pokemon_id INT NOT NULL REFERENCES Pokemon(id),
 move_id INT NOT NULL REFERENCES Moves(id),
@@ -65,7 +65,7 @@ async function seedMoves() {
   try {
     const stream = client.query(
       copyFrom(`
-      COPY Moves(id, name, type, category, power, accuracy, pp, effect, probability)
+      COPY Moves(name, type, category, pp, power, accuracy, range, effect)
       FROM STDIN WITH (FORMAT CSV, HEADER)`),
     );
 
