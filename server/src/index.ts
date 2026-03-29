@@ -2,7 +2,7 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import bodyParser from "body-parser";
-import { pool } from "../../database/db";
+import { pool } from "../database/db";
 import "dotenv/config";
 import type { Request, Response } from "@types/express";
 
