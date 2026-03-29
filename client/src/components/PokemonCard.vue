@@ -76,7 +76,7 @@ const totalEvYield = computed(() => {
       <p><span class="ev-name">Special Attack</span>: <span class="ev-value">{{ pokemon.ev_special_attack || 0 }}</span></p>
       <p><span class="ev-name">Special Defense</span>: <span class="ev-value">{{ pokemon.ev_special_defense || 0 }}</span></p>
       <p><span class="ev-name">Speed</span>: <span class="ev-value">{{ pokemon.ev_speed || 0 }}</span></p>
-      <p><span class="ev-total-name">Speed</span>: <span class="ev-total-value">{{ totalEvYield }}</span></p>
+      <p><span class="ev-total-name">Total</span>: <span class="ev-total-value">{{ totalEvYield }}</span></p>
     </div>
     <div class="moveset">
       <div v-for="move in pokemon.moves">
