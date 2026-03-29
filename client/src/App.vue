@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import axios from "axios";
 import { ref, onMounted } from "vue";
+import PokemonCard from "./components/PokemonCard.vue";
 import type { Pokemon } from "../../shared/types.ts";
 
 const error = ref(null);
@@ -20,8 +21,6 @@ onMounted(loadPokemon);
 
 <template>
   <div v-if="pokemon.length > 0">
-    <ul>
-      <li v-for="poke in pokemon">#{{ poke.id}}: {{ poke.name }} ({{ poke.primary_type }}{{poke.secondary_type ? `/${poke.secondary_type}` : ""}} Type)</li>
-    </ul>
+    <PokemonCard v-for="poke in pokemon" :pokemon="poke"/>
   </div>
 </template>
