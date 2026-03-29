@@ -56,8 +56,8 @@ accuracy REAL,
 range TEXT,
 effect TEXT);`;
 
-const pkmnMovesSeed = `CREATE TABLE IF NOT EXISTS Pokemon_Moves (pokemon_id INT NOT NULL REFERENCES Pokemon(id),
-move_id INT NOT NULL REFERENCES Moves(id),
+const pkmnMovesSeed = `CREATE TABLE IF NOT EXISTS Pokemon_Moves (pokemon_id INT NOT NULL REFERENCES Pokemon(),
+move_id INT NOT NULL REFERENCES Moves(id),pokedex_number
 PRIMARY KEY (pokemon_id, move_id));`;
 
 async function seedMoves() {
