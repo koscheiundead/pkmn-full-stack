@@ -18,15 +18,29 @@ const totalEvYield = computed(() => {
   return (pokemon.ev_health || 0) + (pokemon.ev_attack || 0) + (pokemon.ev_defense || 0) +
     (pokemon.ev_special_attack || 0) + (pokemon.ev_special_defense || 0) + (pokemon.ev_speed || 0);
 });
+
+const imgPrimary = computed(() => {
+  if (!props.pokemon.primary_type?.trim()) return "";
+  const type = props.pokemon.primary_type.replace(/[^a-zA-Z]/g, '').toLowerCase();
+  const formattedType = type.charAt(0).toUpperCase() + type.slice(1);
+  return `/icons/Pokemon_Type_Icon_${formattedType}.png`;
+});
+
+const imgSecondary = computed(() => {
+  if (!props.pokemon.secondary_type?.trim()) return "";
+  const type = props.pokemon.secondary_type.replace(/[^a-zA-Z]/g, '').toLowerCase();
+  const formattedType = type.charAt(0).toUpperCase() + type.slice(1);
+  return `/icons/Pokemon_Type_Icon_${formattedType}.png`;
+});
 </script>
 
 <template>
-  <div v-if="pokemon">
+  <div v-if="pokemon" :class="['pokemon-card', `type-${pokemon.primary_type.toLowerCase()}`]">
     <h1>#{{pokemon.pokedex_number}}: {{ pokemon.name }}</h1>
-    <h2>{{ pokemon.class }} {{ pokemon.form ?? "" }}</h2>
+    <h2>{{ pokemon.class }} <span v-if="pokemon.form">({{ pokemon.form }})</span></h2>
     <h3 v-if="pokemon.legendary">{{ pokemon.legendary }}</h3>
     <div class="types">
-      <p>{{ pokemon.primary_type }}{{ pokemon.secondary_type ? `/${pokemon.secondary_type}` : '' }}</p>
+      <p><img :src="imgPrimary" height="25" width="25">{{ pokemon.primary_type }}<span v-if="pokemon.secondary_type">/<img :src="imgSecondary" width="25" height="25">{{pokemon.secondary_type}}</span></p>
     </div>
     <div class="origin">
       <h4>First Game: {{ pokemon.first_game }}</h4>
@@ -86,4 +100,101 @@ const totalEvYield = computed(() => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.pokemon-card.type-normal {
+  --type-color: #a8a878;
+  --type-bg: #f5f5dc;
+}
+
+.pokemon-card.type-fire {
+  --type-color: #f08030;
+  --type-bg: #fdf1e6;
+}
+
+.pokemon-card.type-water {
+  --type-color: #6890f0;
+  --type-bg: #ebf1ff;
+}
+
+.pokemon-card.type-grass {
+  --type-color: #78c850;
+  --type-bg: #f1f9eb;
+}
+
+.pokemon-card.type-electric {
+  --type-color: #f8d030;
+  --type-bg: #fefbeb;
+}
+
+.pokemon-card.type-ice {
+  --type-color: #98d8d8;
+  --type-bg: #f1fbfb;
+}
+
+.pokemon-card.type-fighting {
+  --type-color: #c03028;
+  --type-bg: #f8ebeb;
+}
+
+.pokemon-card.type-poison {
+  --type-color: #a040a0;
+  --type-bg: #f6ebf6;
+}
+
+.pokemon-card.type-ground {
+  --type-color: #e0c068;
+  --type-bg: #faf6eb;
+}
+
+.pokemon-card.type-flying {
+  --type-color: #a890f0;
+  --type-bg: #f4f1fe;
+}
+
+.pokemon-card.type-psychic {
+  --type-color: #f85888;
+  --type-bg: #fef1f5;
+}
+
+.pokemon-card.type-bug {
+  --type-color: #a8b820;
+  --type-bg: #f4f6e6;
+}
+
+.pokemon-card.type-rock {
+  --type-color: #b8a038;
+  --type-bg: #f6f4eb;
+}
+
+.pokemon-card.type-ghost {
+  --type-color: #705898;
+  --type-bg: #f0eef5;
+}
+
+.pokemon-card.type-dragon {
+  --type-color: #7038f8;
+  --type-bg: #efecfe;
+}
+
+.pokemon-card.type-steel {
+  --type-color: #b8b8d0;
+  --type-bg: #f6f6f9;
+}
+
+.pokemon-card.type-dark {
+  --type-color: #705848;
+  --type-bg: #f0eeed;
+}
+
+.pokemon-card.type-fairy {
+  --type-color: #ee99ac;
+  --type-bg: #fdf3f5;
+}
+
+.pokemon-card {
+  border: 2px solid var(--type-color);
+  background-color: var(--type-bg);
+  color: var(--type-color);
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+}
+</style>
