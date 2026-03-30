@@ -36,39 +36,53 @@ const imgSecondary = computed(() => {
 
 <template>
   <div v-if="pokemon" :class="['pokemon-card', `type-${pokemon.primary_type.toLowerCase()}`]">
-    <h1>#{{pokemon.pokedex_number}}: {{ pokemon.name }}</h1>
+    <div class="card-header">
+      <h1 class="pokemon-name">#{{ pokemon.pokedex_number }}: {{ pokemon.name }}</h1>
+      <div class="type-pills">
+        <p><img :src="imgPrimary" height="25" width="25">{{ pokemon.primary_type }}<span
+            v-if="pokemon.secondary_type">/<img :src="imgSecondary" width="25" height="25">{{ pokemon.secondary_type
+            }}</span></p>
+      </div>
+    </div>
     <h2>{{ pokemon.class }} <span v-if="pokemon.form">({{ pokemon.form }})</span></h2>
     <h3 v-if="pokemon.legendary">{{ pokemon.legendary }}</h3>
-    <div class="types">
-      <p><img :src="imgPrimary" height="25" width="25">{{ pokemon.primary_type }}<span v-if="pokemon.secondary_type">/<img :src="imgSecondary" width="25" height="25">{{pokemon.secondary_type}}</span></p>
-    </div>
     <div class="origin">
       <h4>First Game: {{ pokemon.first_game }}</h4>
     </div>
-    <div class="size">
-      <p>Height: {{  pokemon.height }}</p>
-      <p>Weight: {{ pokemon.weight }}</p>
-    </div>
-    <div class="gender">
-      <p>{{ pokemon.ratio_male }}% male</p>
-      <p>{{ pokemon.ratio_female }}% female</p>
-    </div>
-    <div class="catch-grow-hatch">
-      <p><span class="stat-name">Catch rate</span>: <span class="stat-value">{{ pokemon.catch_rate }}</span></p>
-      <p><span class="stat-name">Experience rate</span>: <span class="stat-value">{{ pokemon.experience_rate }}</span></p>
-      <p><span class="stat-name">Experience total</span>: <span class="stat-value">{{ pokemon.experience_total }}</span></p>
-      <p v-if="pokemon.previous_evolution_pokedex_id"><span class="stat-name">Previous evolution</span>: <span class="stat-value">{{ pokemon.previous_evolution_pokedex_id }}</span></p>
-      <p v-if="pokemon.evolution_requirement"><span class="stat-name">Evolution requirement</span>: <span class="stat-value">{{ pokemon.evolution_requirement }}</span></p>
-      <p><span class="stat-name">Egg Group I</span>: <span class="stat-value">{{ pokemon.egg_group_i }}</span></p>
-      <p v-if="pokemon.egg_group_ii"><span class="stat-name">Egg Group II</span>: <span class="stat-value">{{ pokemon.egg_group_ii }}</span></p>
-      <p><span class="stat-name">Egg Cycle Count</span>: <span class="stat-value">{{ pokemon.egg_cycle_count }}</span></p>
+    <div class="data-grid">
+      <div class="data-section size">
+        <p>Height: {{ pokemon.height }}</p>
+        <p>Weight: {{ pokemon.weight }}</p>
+      </div>
+      <div class="data-section gender">
+        <p>{{ pokemon.ratio_male }}% male</p>
+        <p>{{ pokemon.ratio_female }}% female</p>
+      </div>
+      <div class="data-section catch-info">
+        <p><span class="stat-name">Catch rate</span>: <span class="stat-value">{{ pokemon.catch_rate }}</span></p>
+        <p><span class="stat-name">Experience rate</span>: <span class="stat-value">{{ pokemon.experience_rate }}</span>
+        </p>
+        <p><span class="stat-name">Experience total</span>: <span class="stat-value">{{ pokemon.experience_total
+            }}</span>
+        </p>
+        <p v-if="pokemon.previous_evolution_pokedex_id"><span class="stat-name">Previous evolution</span>: <span
+            class="stat-value">{{ pokemon.previous_evolution_pokedex_id }}</span></p>
+        <p v-if="pokemon.evolution_requirement"><span class="stat-name">Evolution requirement</span>: <span
+            class="stat-value">{{ pokemon.evolution_requirement }}</span></p>
+        <p><span class="stat-name">Egg Group I</span>: <span class="stat-value">{{ pokemon.egg_group_i }}</span></p>
+        <p v-if="pokemon.egg_group_ii"><span class="stat-name">Egg Group II</span>: <span class="stat-value">{{
+          pokemon.egg_group_ii }}</span></p>
+        <p><span class="stat-name">Egg Cycle Count</span>: <span class="stat-value">{{ pokemon.egg_cycle_count }}</span>
+        </p>
+      </div>
     </div>
     <div class="abilities">
       <ul>
         <li>{{ pokemon.ability_i }}: {{ pokemon.ability_i_description }}</li>
         <li v-if="pokemon.ability_ii">{{ pokemon.ability_ii }}: {{ pokemon.ability_ii_description }}</li>
         <li v-if="pokemon.hidden_ability">{{ pokemon.hidden_ability }}: {{ pokemon.hidden_ability_description }}</li>
-        <li v-if="pokemon.special_event_ability">{{ pokemon.special_event_ability }}: {{ pokemon.special_event_ability_description }}</li>
+        <li v-if="pokemon.special_event_ability">{{ pokemon.special_event_ability }}: {{
+          pokemon.special_event_ability_description }}</li>
       </ul>
     </div>
     <div class="stats">
@@ -78,7 +92,8 @@ const imgSecondary = computed(() => {
       <p><span class="stat-name">Attack</span>: <span class="stat-value">{{ pokemon.attack }}</span></p>
       <p><span class="stat-name">Defense</span>: <span class="stat-value">{{ pokemon.defense }}</span></p>
       <p><span class="stat-name">Special Attack</span>: <span class="stat-value">{{ pokemon.special_attack }}</span></p>
-      <p><span class="stat-name">Special Defense</span>: <span class="stat-value">{{ pokemon.special_defense }}</span></p>
+      <p><span class="stat-name">Special Defense</span>: <span class="stat-value">{{ pokemon.special_defense }}</span>
+      </p>
       <p><span class="stat-name">Speed</span>: <span class="stat-value">{{ pokemon.speed }}</span></p>
       <p><span class="stat-total-name">Total</span>: <span class="stat-total-value">{{ totalStats }}</span></p>
     </div>
@@ -87,8 +102,10 @@ const imgSecondary = computed(() => {
       <p><span class="ev-name">Health</span>: <span class="ev-value">{{ pokemon.ev_health || 0 }}</span></p>
       <p><span class="ev-name">Attack</span>: <span class="ev-value">{{ pokemon.ev_attack || 0 }}</span></p>
       <p><span class="ev-name">Defense</span>: <span class="ev-value">{{ pokemon.ev_defense || 0 }}</span></p>
-      <p><span class="ev-name">Special Attack</span>: <span class="ev-value">{{ pokemon.ev_special_attack || 0 }}</span></p>
-      <p><span class="ev-name">Special Defense</span>: <span class="ev-value">{{ pokemon.ev_special_defense || 0 }}</span></p>
+      <p><span class="ev-name">Special Attack</span>: <span class="ev-value">{{ pokemon.ev_special_attack || 0 }}</span>
+      </p>
+      <p><span class="ev-name">Special Defense</span>: <span class="ev-value">{{ pokemon.ev_special_defense || 0
+      }}</span></p>
       <p><span class="ev-name">Speed</span>: <span class="ev-value">{{ pokemon.ev_speed || 0 }}</span></p>
       <p><span class="ev-total-name">Total</span>: <span class="ev-total-value">{{ totalEvYield }}</span></p>
     </div>
@@ -195,6 +212,34 @@ const imgSecondary = computed(() => {
   border: 2px solid var(--type-color);
   background-color: var(--type-bg);
   color: var(--type-color);
-  text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border: 2px solid var(--type-color);
+  border-radius: 50px;
+  padding: 0.5rem 1.5rem;
+  margin-top: -2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.data-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  border-top: 1px solid var(--type-color);
+  margin-top: 1rem;
+}
+
+.data-section h4 {
+  color: var(--type-color);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
 }
 </style>
