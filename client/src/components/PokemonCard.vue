@@ -103,28 +103,51 @@ const imgSecondary = computed(() => {
         <p v-else>This Pokémon is not known to evolve into another.</p>
       </div>
     </div>
-    <div class="abilities">
-      <ul>
-        <li>{{ pokemon.ability_i }}: {{ pokemon.ability_i_description }}</li>
-        <li v-if="pokemon.ability_ii">{{ pokemon.ability_ii }}: {{ pokemon.ability_ii_description }}</li>
-        <li v-if="pokemon.hidden_ability">{{ pokemon.hidden_ability }}: {{ pokemon.hidden_ability_description }}</li>
-        <li v-if="pokemon.special_event_ability">{{ pokemon.special_event_ability }}: {{
-          pokemon.special_event_ability_description }}</li>
-      </ul>
+    <div class="abilities-section">
+      <h3>Abilities</h3>
+      <div class="ability-list">
+        <div class="ability-slot">
+          <div class="ability-header">
+            <span class="ability-name">{{ pokemon.ability_i }}</span><span class="ability-tag">Primary</span>
+          </div>
+          <p class="ability-desc">{{ pokemon.ability_i_description }}</p>
+        </div>
+
+        <div v-if="pokemon.ability_ii" class="ability-slot">
+          <div class="ability-header">
+            <span class="ability-name">{{ pokemon.ability_ii }}</span><span class="ability-tag">Secondary</span>
+          </div>
+          <p class="ability-desc">{{ pokemon.ability_ii_description }}</p>
+        </div>
+
+        <div v-if="pokemon.hidden_ability" class="ability-slot hidden">
+          <div class="ability-header">
+            <span class="ability-name">{{ pokemon.hidden_ability }}</span><span class="ability-tag">Hidden</span>
+          </div>
+          <p class="ability-desc">{{ pokemon.hidden_ability_description }}</p>
+        </div>
+
+        <div v-if="pokemon.special_event_ability" class="ability-slot special">
+          <div class="ability-header">
+            <span class="ability-name">{{ pokemon.special_event_ability }}</span><span class="ability-tag">Event</span>
+          </div>
+          <p class="ability-desc">{{ pokemon.special_event_ability_description }}</p>
+        </div>
+      </div>
     </div>
     <div class="combat-info">
       <div class="stats-container">
         <h3>Base Stats</h3>
         <div class="stat-grid">
           <div class="stat-row"><span class="label">Base Happiness</span><span class="value">{{ pokemon.happiness_base
-          }}</span></div>
+              }}</span></div>
           <div class="stat-row"><span class="label">Health</span><span class="value">{{ pokemon.health }}</span></div>
           <div class="stat-row"><span class="label">Attack</span><span class="value">{{ pokemon.attack }}</span></div>
           <div class="stat-row"><span class="label">Defense</span><span class="value">{{ pokemon.defense }}</span></div>
           <div class="stat-row"><span class="label">Special Attack</span><span class="value">{{ pokemon.special_attack
-          }}</span></div>
+              }}</span></div>
           <div class="stat-row"><span class="label">Special Defense</span><span class="value">{{ pokemon.special_defense
-          }}</span>
+              }}</span>
           </div>
           <div class="stat-row"><span class="label">Speed</span><span class="value">{{ pokemon.speed }}</span></div>
           <div class="stat-row total"><span class="label">Total</span><span class="value">{{ totalStats }}</span>
@@ -330,6 +353,65 @@ const imgSecondary = computed(() => {
   background: rgba(255, 255, 255, 0.3);
   padding: 15px;
   border-radius: 15px;
+}
+
+.abilities-section {
+  margin-top: 20px;
+}
+
+.ability-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ability-slot {
+  background: rgba(255, 255, 255, 0.5);
+  border-left: 4px solid var(--type-color);
+  border-radius: 4px 12px 12px 4px;
+  padding: 10px 15px;
+  transition: transform 0.2s ease;
+}
+
+.ability-slot:hover {
+  background: white;
+  transform: translateX(5px);
+}
+
+.ability-slot.hidden, .ability-slot.special {
+  border-left-style: dashed;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.ability-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.ability-name {
+  font-weight: bold;
+  color: #333;
+  font-size: 1rem;
+}
+
+.ability-tag {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: var(--type-color);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.ability-desc {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #555;
+  font-style: italic;
 }
 
 .stats-container,
