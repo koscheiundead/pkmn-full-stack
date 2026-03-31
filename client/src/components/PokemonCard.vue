@@ -62,42 +62,45 @@ const imgSecondary = computed(() => {
   <div v-if="pokemon" :class="['pokemon-card', `type-${pokemon.primary_type.toLowerCase()}`]">
     <div class="card-header">
       <h1 class="pokemon-name">#{{ pokemon.pokedex_number }}: {{ pokemon.name }}</h1>
+
+      <div class="pokemon-class">
+        {{ pokemon.class }} <span v-if="pokemon.form" class="form-tag">({{ pokemon.form }})</span>
+      </div>
+
       <div class="type-pills">
-        <p><img :src="imgPrimary" height="25" width="25">{{ pokemon.primary_type }}<span
-            v-if="pokemon.secondary_type">/<img :src="imgSecondary" width="25" height="25">{{ pokemon.secondary_type
-            }}</span></p>
+        <p><img :src="imgPrimary" height="10" width="10" :alt="pokemon.primary_type">{{ pokemon.primary_type }}<span
+            v-if="pokemon.secondary_type">/<img :src="imgSecondary" width="10" height="10"
+              :alt="pokemon.secondary_type">{{ pokemon.secondary_type
+              }}</span></p>
       </div>
     </div>
-    <h2>{{ pokemon.class }} <span v-if="pokemon.form">({{ pokemon.form }})</span></h2>
     <h3 v-if="pokemon.legendary">{{ pokemon.legendary }}</h3>
-    <div class="origin">
-      <h4>First Game: {{ pokemon.first_game }}</h4>
-    </div>
     <div class="data-grid">
-      <div class="data-section size">
-        <p>Height: {{ pokemon.height }}</p>
-        <p>Weight: {{ pokemon.weight }}</p>
+      <div class="data-section">
+        <h4>Origin & Size</h4>
+        <p>First Game: {{ pokemon.first_game }}</p>
+        <p>Height: {{ pokemon.height }} m | Weight: {{ pokemon.weight }} kg</p>
       </div>
-      <div class="data-section gender">
+      <div class="data-section">
+        <h4>Breeding</h4>
         <p>{{ pokemon.ratio_male }}% male</p>
         <p>{{ pokemon.ratio_female }}% female</p>
+        <p>Egg groups: {{ pokemon.egg_group_i }}<span v-if="pokemon.egg_group_ii">, {{ pokemon.egg_group_ii }}</span>
+        </p>
       </div>
-      <div class="data-section catch-info">
-        <p><span class="stat-name">Catch rate</span>: <span class="stat-value">{{ pokemon.catch_rate }}</span></p>
-        <p><span class="stat-name">Experience rate</span>: <span class="stat-value">{{ pokemon.experience_rate }}</span>
-        </p>
-        <p><span class="stat-name">Experience total</span>: <span class="stat-value">{{ pokemon.experience_total
-            }}</span>
-        </p>
-        <p v-if="pokemon.previous_evolution_pokedex_id && prevEvolution"><span class="stat-name">Previous
-            evolution</span>: <span class="stat-value">#{{ pokemon.previous_evolution_pokedex_id }} - {{ prevEvolution }}</span></p>
-        <p v-if="pokemon.evolution_requirement"><span class="stat-name">Evolution requirement</span>: <span
-            class="stat-value">{{ pokemon.evolution_requirement }}</span></p>
-        <p><span class="stat-name">Egg Group I</span>: <span class="stat-value">{{ pokemon.egg_group_i }}</span></p>
-        <p v-if="pokemon.egg_group_ii"><span class="stat-name">Egg Group II</span>: <span class="stat-value">{{
-          pokemon.egg_group_ii }}</span></p>
-        <p><span class="stat-name">Egg Cycle Count</span>: <span class="stat-value">{{ pokemon.egg_cycle_count }}</span>
-        </p>
+      <div class="data-section">
+        <h4>Training</h4>
+        <p>Catch Rate: {{ pokemon.catch_rate }}</p>
+        <p>Experience Rate: {{ pokemon.experience_rate }}</p>
+        <p>Experience Total: {{ pokemon.experience_total }} EXP</p>
+      </div>
+      <div class="data-section">
+        <h4>Evolution</h4>
+        <p v-if="pokemon.previous_evolution_pokedex_id && prevEvolution">Evolves from #{{
+          pokemon.previous_evolution_pokedex_id }} - {{ prevEvolution }}</p>
+        <p v-else>This Pokémon is not known to evolve from another.</p>
+        <p v-if="pokemon.evolution_requirement">Evolution condition(s): {{ pokemon.evolution_requirement }}</p>
+        <p v-else>This Pokémon is not known to evolve into another.</p>
       </div>
     </div>
     <div class="abilities">
@@ -109,29 +112,38 @@ const imgSecondary = computed(() => {
           pokemon.special_event_ability_description }}</li>
       </ul>
     </div>
-    <div class="stats">
-      <h4>Stats</h4>
-      <p><span class="stat-name">Base Happiness</span>: <span class="stat-value">{{ pokemon.happiness_base }}</span></p>
-      <p><span class="stat-name">Health</span>: <span class="stat-value">{{ pokemon.health }}</span></p>
-      <p><span class="stat-name">Attack</span>: <span class="stat-value">{{ pokemon.attack }}</span></p>
-      <p><span class="stat-name">Defense</span>: <span class="stat-value">{{ pokemon.defense }}</span></p>
-      <p><span class="stat-name">Special Attack</span>: <span class="stat-value">{{ pokemon.special_attack }}</span></p>
-      <p><span class="stat-name">Special Defense</span>: <span class="stat-value">{{ pokemon.special_defense }}</span>
-      </p>
-      <p><span class="stat-name">Speed</span>: <span class="stat-value">{{ pokemon.speed }}</span></p>
-      <p><span class="stat-total-name">Total</span>: <span class="stat-total-value">{{ totalStats }}</span></p>
+    <div class="combat-info">
+      <div class="stats-container">
+        <h3>Base Stats</h3>
+        <div class="stat-grid">
+          <div class="stat-row"><span class="label">Base Happiness</span><span class="value">{{ pokemon.happiness_base
+          }}</span></div>
+          <div class="stat-row"><span class="label">Health</span><span class="value">{{ pokemon.health }}</span></div>
+          <div class="stat-row"><span class="label">Attack</span><span class="value">{{ pokemon.attack }}</span></div>
+          <div class="stat-row"><span class="label">Defense</span><span class="value">{{ pokemon.defense }}</span></div>
+          <div class="stat-row"><span class="label">Special Attack</span><span class="value">{{ pokemon.special_attack
+          }}</span></div>
+          <div class="stat-row"><span class="label">Special Defense</span><span class="value">{{ pokemon.special_defense
+          }}</span>
+          </div>
+          <div class="stat-row"><span class="label">Speed</span><span class="value">{{ pokemon.speed }}</span></div>
+          <div class="stat-row total"><span class="label">Total</span><span class="value">{{ totalStats }}</span>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="ev-yield">
-      <h4>EV Yield</h4>
-      <p><span class="ev-name">Health</span>: <span class="ev-value">{{ pokemon.ev_health || 0 }}</span></p>
-      <p><span class="ev-name">Attack</span>: <span class="ev-value">{{ pokemon.ev_attack || 0 }}</span></p>
-      <p><span class="ev-name">Defense</span>: <span class="ev-value">{{ pokemon.ev_defense || 0 }}</span></p>
-      <p><span class="ev-name">Special Attack</span>: <span class="ev-value">{{ pokemon.ev_special_attack || 0 }}</span>
-      </p>
-      <p><span class="ev-name">Special Defense</span>: <span class="ev-value">{{ pokemon.ev_special_defense || 0
-      }}</span></p>
-      <p><span class="ev-name">Speed</span>: <span class="ev-value">{{ pokemon.ev_speed || 0 }}</span></p>
-      <p><span class="ev-total-name">Total</span>: <span class="ev-total-value">{{ totalEvYield }}</span></p>
+    <div class="ev-container">
+      <h3>EV Yield</h3>
+      <div class="ev-grid">
+        <div v-if="pokemon.ev_health" class="ev-badge">Health +{{ pokemon.ev_health }}</div>
+        <div v-if="pokemon.ev_attack" class="ev-badge">Attack +{{ pokemon.ev_attack }}</div>
+        <div v-if="pokemon.ev_defense" class="ev-badge">Defense +{{ pokemon.ev_defense }}</div>
+        <div v-if="pokemon.ev_special_attack" class="ev-badge">Special Attack +{{ pokemon.ev_special_attack }}</div>
+        <div v-if="pokemon.ev_special_defense" class="ev-badge">Special Defense +{{ pokemon.ev_special_defense }}
+        </div>
+        <div v-if="pokemon.ev_speed" class="ev-badge">Speed +{{ pokemon.ev_speed }}</div>
+        <div v-if="totalEvYield" class="ev-badge">Total +{{ totalEvYield }}</div>
+      </div>
     </div>
     <div class="moveset">
       <div v-for="move in pokemon.moves">
@@ -233,36 +245,150 @@ const imgSecondary = computed(() => {
 }
 
 .pokemon-card {
-  border: 2px solid var(--type-color);
+  position: relative;
+  margin-top: 2rem;
+  border: 3px solid var(--type-color);
   background-color: var(--type-bg);
-  color: var(--type-color);
-  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  padding: 2rem 1.5rem 1.5rem;
+  color: #2c3e50;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .card-header {
+  position: absolute;
+  top: -1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 85%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: white;
   border: 2px solid var(--type-color);
   border-radius: 50px;
-  padding: 0.5rem 1.5rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 1.25rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  gap: 1rem;
+}
+
+.pokemon-name {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--type-color);
+  text-shadow: none;
+  white-space: nowrap;
+}
+
+.pokemon-class {
+  font-style: italic;
+  font-size: 0.85rem;
+  color: #555;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  padding: 0 1rem;
+  white-space: nowrap;
+}
+
+.form-tag {
+  font-style: normal;
+  font-weight: bold;
+  font-size: 0.75rem;
+  color: var(--type-color);
 }
 
 .data-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  padding: 1rem;
-  border-top: 1px solid var(--type-color);
-  margin-top: 1rem;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
 }
 
 .data-section h4 {
+  margin: 0 0 0.5rem 0;
   color: var(--type-color);
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
-  margin-bottom: 0.5rem;
+  letter-spacing: 1px;
+}
+
+.type-pills p {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.combat-info {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 15px;
+  border-radius: 15px;
+}
+
+.stats-container,
+.ev-container {
+  flex: 1;
+}
+
+h3 {
+  font-size: 0.9rem;
+  color: var(--type-color);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  border-bottom: 2px solid var(--type-color);
+}
+
+.stat-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  align-items: center;
+  font-size: 0.85rem;
+  background: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.stat-row.total {
+  background: var(--type-color);
+  color: white;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.stat-row.label {
+  font-weight: bold;
+  color: #666;
+}
+
+.stat-row.total .label {
+  color: white;
+}
+
+.ev-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ev-badge {
+  background: var(--type-color);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: bold;
 }
 </style>
