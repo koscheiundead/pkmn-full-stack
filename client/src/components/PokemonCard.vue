@@ -90,7 +90,7 @@ const imgSecondary = computed(() => {
             }}</span>
         </p>
         <p v-if="pokemon.previous_evolution_pokedex_id && prevEvolution"><span class="stat-name">Previous
-            evolution</span>: <span class="stat-value">#{{ pokemon.previous_evolution_pokedex_id }}: {{ prevEvolution }}</span></p>
+            evolution</span>: <span class="stat-value">#{{ pokemon.previous_evolution_pokedex_id }} - {{ prevEvolution }}</span></p>
         <p v-if="pokemon.evolution_requirement"><span class="stat-name">Evolution requirement</span>: <span
             class="stat-value">{{ pokemon.evolution_requirement }}</span></p>
         <p><span class="stat-name">Egg Group I</span>: <span class="stat-value">{{ pokemon.egg_group_i }}</span></p>
