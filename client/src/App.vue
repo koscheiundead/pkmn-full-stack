@@ -20,7 +20,13 @@ onMounted(loadPokemon);
 </script>
 
 <template>
-  <div v-if="pokemon.length > 0">
+  <div v-if="pokemon.length > 0" class="wrapper">
     <PokemonCard v-for="poke in pokemon" :pokemon="poke"/>
   </div>
 </template>
+
+<style scoped>
+.wrapper {
+  margin: 20px;
+}
+</style>

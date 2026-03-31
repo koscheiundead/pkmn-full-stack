@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, onBeforeMount } from 'vue';
+import axios from 'axios';
 import MoveCard from './MoveCard.vue';
 import type { Pokemon } from "../../../shared/types";
 
 const props = defineProps<{
   pokemon: Pokemon
 }>();
+const error = ref(null);
+const prevEvolution = ref("");
 
 const totalStats = computed(() => {
   const pokemon = props.pokemon;
@@ -17,6 +20,23 @@ const totalEvYield = computed(() => {
   const pokemon = props.pokemon;
   return (pokemon.ev_health || 0) + (pokemon.ev_attack || 0) + (pokemon.ev_defense || 0) +
     (pokemon.ev_special_attack || 0) + (pokemon.ev_special_defense || 0) + (pokemon.ev_speed || 0);
+});
+
+onBeforeMount(async () => {
+  if (props.pokemon.previous_evolution_pokedex_id) {
+    try {
+      const res = await axios.get(`http://127.0.0.1:3000/pokemon/${props.pokemon.previous_evolution_pokedex_id}`);
+      if (res.status === 200) {
+        prevEvolution.value = res.data.pokemon.name;
+      }
+    } catch (err) {
+      console.error("Error fetching previous evolution:", err);
+      error.value = err;
+      prevEvolution.value = "";
+    }
+  } else {
+    prevEvolution.value = "";
+  }
 });
 
 const imgPrimary = computed(() => {
@@ -35,6 +55,10 @@ const imgSecondary = computed(() => {
 </script>
 
 <template>
+  <div v-if="error">
+    <h1>Error</h1>
+    <p>{{ error }}</p>
+  </div>
   <div v-if="pokemon" :class="['pokemon-card', `type-${pokemon.primary_type.toLowerCase()}`]">
     <div class="card-header">
       <h1 class="pokemon-name">#{{ pokemon.pokedex_number }}: {{ pokemon.name }}</h1>
@@ -65,8 +89,8 @@ const imgSecondary = computed(() => {
         <p><span class="stat-name">Experience total</span>: <span class="stat-value">{{ pokemon.experience_total
             }}</span>
         </p>
-        <p v-if="pokemon.previous_evolution_pokedex_id"><span class="stat-name">Previous evolution</span>: <span
-            class="stat-value">{{ pokemon.previous_evolution_pokedex_id }}</span></p>
+        <p v-if="pokemon.previous_evolution_pokedex_id && prevEvolution"><span class="stat-name">Previous
+            evolution</span>: <span class="stat-value">#{{ pokemon.previous_evolution_pokedex_id }}: {{ prevEvolution }}</span></p>
         <p v-if="pokemon.evolution_requirement"><span class="stat-name">Evolution requirement</span>: <span
             class="stat-value">{{ pokemon.evolution_requirement }}</span></p>
         <p><span class="stat-name">Egg Group I</span>: <span class="stat-value">{{ pokemon.egg_group_i }}</span></p>
@@ -223,7 +247,6 @@ const imgSecondary = computed(() => {
   border: 2px solid var(--type-color);
   border-radius: 50px;
   padding: 0.5rem 1.5rem;
-  margin-top: -2rem;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
