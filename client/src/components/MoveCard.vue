@@ -5,9 +5,10 @@ const props = defineProps<{ move: Move }>();
 </script>
 
 <template>
-  <div :class="['move-card', `type-${move.type.toLowerCase()}`]">
+  <div :class="['move-card', `type-${move.type.toLowerCase()}`, move.learn_method]">
     <div class="move-header">
-      <span class="move-id">#{{ move.id }}</span>
+      <span class="method-badge">#{{ move.learn_method === 'level-up' ? `Lvl ${move.level_learned}` : move.learn_method.toUpperCase()}}</span>
+
       <h3 class="move-name">{{ move.name }}</h3>
       <span class="move-category">{{ move.category }}</span>
     </div>
@@ -26,8 +27,8 @@ const props = defineProps<{ move: Move }>();
         <span class="value">{{ move.pp }}</span>
       </div>
     </div>
-
-    <div class="move-details">
+    <div>{{ move }}</div>
+    <div class="move-details" v-if="move.range">
       <p class="move-range"><strong>Range:</strong> {{ move.range }}</p>
       <p class="move-effect">{{ move.effect }}</p>
     </div>
@@ -107,16 +108,36 @@ const props = defineProps<{ move: Move }>();
   --move-color: #ee99ac;
 }
 .move-card {
-  --move-color: #777; /* default fallback */
+  position: relative;
   border-left: 5px solid var(--move-color);
   background: white;
   border-radius: 8px;
   padding: 12px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  margin-bottom: 12px;
+  transition: transform 0.1s ease;
+}
+
+.method-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #f0f0f0;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.move-card.level-up {
+  border-left-style: solid;
+}
+
+.move-card.machine {
+  border-left-style: double;
+  border-left-width: 8px;
+}
+
+.move-card.egg {
+  border-left-style: dashed;
 }
 
 .move-header {
@@ -125,17 +146,10 @@ const props = defineProps<{ move: Move }>();
   gap: 10px;
 }
 
-.move-id {
-  font-size: 0.7rem;
-  color: #999;
-  font-weight: bold;
-}
-
 .move-name {
+  font-size: 0.95rem;
   margin: 0;
-  font-size: 1rem;
-  flex-grow: 1;
-  color: #333;
+  color: #222;
 }
 
 .move-category {
@@ -186,7 +200,10 @@ const props = defineProps<{ move: Move }>();
 }
 
 .move-effect {
-  margin: 0;
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: #666;
+  line-height: 1.3;
   font-style: italic;
 }
 </style>

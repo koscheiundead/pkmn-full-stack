@@ -14,31 +14,44 @@ app.use(bodyParser.json());
 
 const port = 3000;
 
-app.get("/pokemon/:id", async (req: Request, res: Response) => {
+app.get("/pokemon/:id/moves", async (req: Request, res: Response) => {
   try {
-    const query = `SELECT p.*, COALESCE(
-    JSON_AGG(
-    JSON_BUILD_OBJECT(
-    'id', m.id,
-    'name', m.name,
-    'type', m.type,
-    'category', m.category,
-    'pp', m.pp,
-    'power', m.power,
-    'accuracy', m.accuracy,
-    'range', m.range,
-    'effect', m.effect
-    )
-    ) FILTER (WHERE m.id IS NOT NULL), '[]'
-    ) as moves
-    FROM Pokemon p
-    LEFT JOIN Pokemon_Moves pm ON p.pokedex_number = pm.pokemon_id
-    LEFT JOIN Moves m ON pm.move_id = m.id
-    WHERE p.id = $1
-    GROUP BY p.id;`;
+    const query = `SELECT m.*, pm.level_learned, pm.learn_method, pm.version_group
+    FROM Moves m
+    JOIN pokemon_moves pm ON m.id = pm.move_id
+    WHERE pm.pokemon_id = $1
+    ORDER BY pm.level_learned ASC;`;
     const result = await pool.query(query, [req.params.id]);
     if (result.rows.length === 0) {
-      res.status(404).json({ status: "failure", error: "Pokemon not found" });
+      res.status(404).json({ status: "failure", error: "No moves found for this Pokémon." });
+      return;
+    }
+    res.json({status: "success", moves: result.rows})
+  } catch (err) {
+    res.status(500).json({status: "failure", error: "Failed to fetch Pokémon moves."})
+  }
+})
+
+app.get("/pokemon/:id", async (req: Request, res: Response) => {
+  try {
+    const query = `SELECT p.*,
+    COALESCE(
+    (
+      SELECT json_agg(move_data ORDER BY move_data.level_learned ASC)
+      FROM (
+        SELECT m.*, pm.level_learned, pm.learn_method
+        FROM Moves m
+        JOIN Pokemon_Moves pm ON m.id = pm.move_id
+        WHERE pm.pokemon_id = p.id
+      ) move_data
+  ),
+  '[]'::json
+    ) AS moves
+    FROM Pokemon p
+    WHERE p.id = $1`;
+    const result = await pool.query(query, [req.params.id]);
+    if (result.rows.length === 0) {
+      res.status(404).json({ status: "failure", error: "Pokémon not found" });
       return;
     }
     res.json({ status: "success", pokemon: result.rows[0] });
@@ -46,38 +59,22 @@ app.get("/pokemon/:id", async (req: Request, res: Response) => {
     console.error("Database error:", error);
     res
       .status(500)
-      .json({ status: "failure", error: "Failed to fetch Pokemon" });
+      .json({ status: "failure", error: "Failed to fetch Pokémon" });
   }
 });
 
 app.get("/pokemon", async (req: Request, res: Response) => {
   try {
-    const query = `SELECT p.*, COALESCE(
-    JSON_AGG(
-    JSON_BUILD_OBJECT(
-    'id', m.id,
-    'name', m.name,
-    'type', m.type,
-    'category', m.category,
-    'pp', m.pp,
-    'power', m.power,
-    'accuracy', m.accuracy,
-    'range', m.range,
-    'effect', m.effect
-    )
-    ) FILTER (WHERE m.id IS NOT NULL), '[]'
-    ) as moves
-    FROM Pokemon p
-    LEFT JOIN Pokemon_Moves pm ON p.pokedex_number = pm.pokemon_id
-    LEFT JOIN Moves m ON pm.move_id = m.id
-    GROUP BY p.id;`;
+    const query = `SELECT *
+    FROM Pokemon
+    ORDER BY pokedex_number ASC;`;
     const result = await pool.query(query);
     res.json({ status: "success", pokemon: result.rows });
   } catch (error) {
     console.error("Database error:", error);
     res
       .status(500)
-      .json({ status: "failure", error: "Failed to fetch Pokemon" });
+      .json({ status: "failure", error: "Failed to fetch Pokémon" });
   }
 });
 
@@ -108,5 +105,5 @@ app.get("/moves", async (req: Request, res: Response) => {
 });
 
 app.listen(port, () => {
-  console.log(`Pokemon server listening on port ${port}! Pika-pi!`);
+  console.log(`Pokémon server listening on port ${port}! Pika-pi!`);
 });

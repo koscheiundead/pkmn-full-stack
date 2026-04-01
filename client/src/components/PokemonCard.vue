@@ -2,13 +2,21 @@
 import { computed, ref, onBeforeMount } from 'vue';
 import axios from 'axios';
 import MoveCard from './MoveCard.vue';
-import type { Pokemon } from "../../../shared/types";
+import type { Pokemon, Move } from "../../../shared/types";
 
 const props = defineProps<{
   pokemon: Pokemon
 }>();
 const error = ref(null);
 const prevEvolution = ref("");
+const moves = ref<Move[]>([]);
+const isExpanded = ref(false);
+const isLoading = ref(false);
+
+const name = computed(() => {
+  const pkmn = props.pokemon.name;
+  return pkmn.charAt(0).toUpperCase() + pkmn.slice(1);
+})
 
 const totalStats = computed(() => {
   const pokemon = props.pokemon;
@@ -22,7 +30,29 @@ const totalEvYield = computed(() => {
     (pokemon.ev_special_attack || 0) + (pokemon.ev_special_defense || 0) + (pokemon.ev_speed || 0);
 });
 
+async function toggleMoves() {
+  isExpanded.value = !isExpanded.value;
+
+  //if we are unexpanding, hide loading value regardless of how long moves is
+  if (!isExpanded.value) isLoading.value = false;
+
+  // if we haven't already fetched and are expanding, fetch
+  if (isExpanded.value && moves.value.length === 0) {
+    isLoading.value = true;
+    try {
+      const res = await axios.get(`http://127.0.0.1:3000/pokemon/${props.pokemon.id}/moves`);
+      moves.value = res.data.moves;
+    } catch (err) {
+      console.error("Failed to load moves:", err);
+      error.value = err?.message || "Error loading moves.";
+    } finally {
+      isLoading.value = false;
+    }
+  }
+}
+
 onBeforeMount(async () => {
+  isLoading.value = true;
   if (props.pokemon.previous_evolution_pokedex_id) {
     try {
       const res = await axios.get(`http://127.0.0.1:3000/pokemon/${props.pokemon.previous_evolution_pokedex_id}`);
@@ -31,11 +61,14 @@ onBeforeMount(async () => {
       }
     } catch (err) {
       console.error("Error fetching previous evolution:", err);
-      error.value = err;
+      error.value = err?.message || "Error loading previous evolution.";
       prevEvolution.value = "";
+    } finally {
+      isLoading.value = false;
     }
   } else {
     prevEvolution.value = "";
+    isLoading.value = false;
   }
 });
 
@@ -61,7 +94,7 @@ const imgSecondary = computed(() => {
   </div>
   <div v-if="pokemon" :class="['pokemon-card', `type-${pokemon.primary_type.toLowerCase()}`]">
     <div class="card-header">
-      <h1 class="pokemon-name">#{{ pokemon.pokedex_number }}: {{ pokemon.name }}</h1>
+      <h1 class="pokemon-name">#{{ pokemon.pokedex_number }}: {{ name }}</h1>
 
       <div class="pokemon-class">
         {{ pokemon.class }} <span v-if="pokemon.form" class="form-tag">({{ pokemon.form }})</span>
@@ -169,8 +202,11 @@ const imgSecondary = computed(() => {
       </div>
     </div>
     <div class="moveset">
-      <div v-for="move in pokemon.moves">
-        <MoveCard :move="move" />
+      <button @click="toggleMoves" :class="['expand-btn', isExpanded ? 'is-open' : '']">{{ isExpanded ? "Hide Moves" : "Show Moves" }}</button>
+      <div v-if="isLoading">Loading...</div>
+      <div v-else-if="isExpanded && moves.length === 0">No moves found.</div>
+      <div v-else-if="isExpanded && moves.length > 0" class="moves-list">
+        <MoveCard v-for="move in moves" :key="move.id" :move="move" />
       </div>
     </div>
   </div>
@@ -472,5 +508,46 @@ h3 {
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: bold;
+}
+
+.expand-btn {
+  width: 100%;
+  background: var(--type-color);
+  color: white;
+  border: none;
+  padding: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  border-radius: 0 0 16px 16px;
+  margin-top: 15px;
+  transition: filter 0.2s, transform 0.1s;
+}
+
+.expand-btn:hover {
+  filter: brightness(1.1); /* slight glow effect */
+}
+
+.expand-btn:active {
+  transform: scale(0.98);
+}
+
+.expand-btn.is-open {
+  border-radius: 16px 16px 0 0;
+}
+
+.moveset {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 10px;
+  margin-top: 15px;
+}
+.moveset::-webkit-scrollbar {
+  width: 6px;
+}
+.moveset::-webkit-scrollbar-thumb {
+  background: var(--type-color);
+  border-radius: 10px;
 }
 </style>

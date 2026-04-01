@@ -40,8 +40,10 @@ export interface Pokemon {
   egg_group_ii: string | null;
   egg_cycle_count: number | null;
   previous_evolution_pokedex_id: number | null;
+  next_evolution_pokedex_id: number | null;
   evolution_requirement: string | null;
-  moves: Array<Move>;
+  moves?: Move[];
+  version_group?: string;
 }
 
 export interface Move {
@@ -54,4 +56,6 @@ export interface Move {
   accuracy: number | null;
   range: string | null;
   effect: string;
+  level_learned: number;
+  learn_method: string;
 }

@@ -61,9 +61,14 @@ accuracy REAL,
 range TEXT,
 effect TEXT);`;
 
-const pkmnMovesSeed = `CREATE TABLE IF NOT EXISTS Pokemon_Moves (pokemon_id INT NOT NULL REFERENCES Pokemon(id),
-move_id INT NOT NULL REFERENCES Moves(id),
-PRIMARY KEY (pokemon_id, move_id));`;
+const pkmnMovesSeed = //CREATE TYPE learn_method_type AS ENUM ('level-up', 'machine', 'egg', 'tutor', 'relearn', 'other');
+`CREATE TABLE IF NOT EXISTS Pokemon_Moves (pokemon_id INTEGER REFERENCES Pokemon(id),
+move_id INTEGER REFERENCES Moves(id),
+move_name TEXT,
+learn_method learn_method_type,
+level_learned INTEGER,
+PRIMARY KEY (pokemon_id, move_id, move_name, learn_method, level_learned)
+);`;
 
 async function seedMoves() {
   const client = await pool.connect(); //single connection from the pool
@@ -89,6 +94,30 @@ async function seedMoves() {
   }
 }
 
+async function seedPokemonMoves() {
+  const client = await pool.connect(); // single connection from pool
+  try {
+    const stream = client.query(
+      copyFrom(`
+        COPY Pokemon_Moves(pokemon_id, move_id, move_name, learn_method, level_learned)
+        FROM STDIN WITH (FORMAT CSV, HEADER)`)
+    );
+
+    const csvPath = path.join(__dirname, "pokemon_moves.csv");
+    const fileStream = fs.createReadStream(csvPath);
+
+    //pipe file directly into DB stream
+    fileStream.pipe(stream);
+
+    return new Promise((resolve, reject) => {
+      stream.on("finish", resolve);
+      stream.on("error", reject);
+    });
+  } finally {
+    client.release(); // always return the client to the pool when we're done!
+  }
+}
+
 async function runSeeds() {
   try {
     console.log("Checking tables...");
@@ -99,8 +128,11 @@ async function runSeeds() {
     console.log("Seeding Pokemon...");
     await seedPokemon(); //stream/loop logic
 
-    console.log("Seeding moves...");
+    console.log("Seeding Moves...");
     await seedMoves();
+
+    console.log("Seeing Pokemon-Move connection...");
+    await seedPokemonMoves();
 
     console.log("Database is ready! Pika-pi!");
   } catch (err) {
