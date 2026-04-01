@@ -1,6 +1,6 @@
 import { Client } from "pg";
 import axios from "axios";
-import 'dotenv/config';
+import "dotenv/config";
 
 const client = new Client({
   host: "localhost",
@@ -10,10 +10,10 @@ const client = new Client({
   port: Number(process.env.DB_PORT),
 });
 
-const POKEMON_COUNT = 151;
+const POKEMON_COUNT = 1025; // full list now
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 const abilityCache = {};
-const getId = (url) => url ? url.split('/').slice(-2, -1)[0] : null;
+const getId = (url) => (url ? url.split("/").slice(-2, -1)[0] : null);
 
 async function resetAndSeed() {
   await client.connect();
@@ -21,9 +21,10 @@ async function resetAndSeed() {
   try {
     console.log("Dropping existing tables...");
     await client.query(`
-      DROP TABLE IF EXISTS Pokemon_Moves;
-      DROP TABLE IF EXISTS Moves;
-      DROP TABLE IF EXISTS Pokemon;
+      DROP TABLE IF EXISTS pokemon_moves;
+      DROP TABLE IF EXISTS moves;
+      DROP TABLE IF EXISTS evolutions;
+      DROP TABLE IF EXISTS pokemon;
       `);
 
     console.log("Creating fresh schema...");
@@ -65,9 +66,7 @@ async function resetAndSeed() {
       egg_group_i VARCHAR(100),
       egg_group_ii VARCHAR(100),
       egg_cycle_count INTEGER,
-      previous_evolution_pokedex_id INTEGER,
-      next_evolution_pokedex_id INTEGER,
-      evolution_requirement TEXT
+      previous_evolution_pokedex_id INTEGER
       );
 
       CREATE TABLE moves (
@@ -89,9 +88,18 @@ async function resetAndSeed() {
       level_learned INTEGER,
       PRIMARY KEY (pokemon_id, move_id, version_group, learn_method, level_learned)
       );
+
+      CREATE TABLE evolutions (
+      id SERIAL PRIMARY KEY,
+      from_pokemon_id INTEGER REFERENCES pokemon(id),
+      to_pokemon_id INTEGER REFERENCES pokemon(id),
+      requirement TEXT
+      );
       `);
 
     const seenMoves = new Set();
+    const processedChains = new Set();
+    const allEvoLinks = []; // temp storage
 
     for (let i = 1; i <= POKEMON_COUNT; i++) {
       console.log(`Fetching ID ${i}`);
@@ -100,7 +108,6 @@ async function resetAndSeed() {
       const s = (
         await axios.get(`https://pokeapi.co/api/v2/pokemon-species/${i}`)
       ).data;
-      const e = (await axios.get(s.evolution_chain.url)).data;
 
       // ability logic
       const fetchAbility = async (abObj) => {
@@ -133,68 +140,133 @@ async function resetAndSeed() {
         p.abilities.find((a) => a.is_hidden),
       );
 
-      // recursive evolution helper (returns next and requirement)
-      function getEvoInfo(chain: any, targetId: string | number) {
-        let current = chain;
-        while (current) {
-          if (getId(current.species.url) == targetId) {
-            const next = current.evolves_to[0];
-            let req = "None";
-            if (next && next.evolution_details[0]) {
-              const d = next.evolution_details[0];
-              const trigger = d.trigger.name.replace(/-/g, " ");
-              const item = d.item
-                ? ` with ${d.item.name.replace(/-/g, " ")}`
-                : "";
-              const lv = d.min_level ? ` at Level ${d.min_level}` : "";
-              const happy = d.min_happiness ? ` with high Happiness` : "";
-              req = `${trigger}${lv}${item}${happy}`.trim();
-            }
-            return { nextId: next ? getId(next.species.url) : null, req };
-          }
-          //check all branches recursively
-          for (const branch of current.evolves_to) {
-            const found = getEvoInfo(branch, targetId);
-            if (found.nextId || found.req !== "None") return found;
-          }
-          current = null;
+      // recursive evolution helper (populating evolutions table)
+      function getAllEvolutions(chain, results = []) {
+        if (!chain || !chain.evolves_to.length) return results;
+
+        // for each evolution path coming off this current position
+        for (const evolution of chain.evolves_to) {
+          results.push({
+            from_id: getId(chain.species.url),
+            to_id: getId(evolution.species.url),
+            requirement: formatRequirement(evolution.evolution_details[0]),
+          });
+          // recursively check if the next pokemon also evolves
+          getAllEvolutions(evolution, results);
         }
-        return { nextId: null, req: null };
+        return results;
+      }
+
+      function formatRequirement(d) {
+        if (!d) return "Unknown";
+        const trigger = d.trigger.name.replace(/-/g, " ");
+        const item = d.item ? ` with ${d.item.name.replace(/-/g, " ")}` : "";
+        const lv = d.min_level ? ` at level ${d.min_level}` : "";
+        const happy = d.min_happiness ? ` with high Happiness` : "";
+        const held = d.held_item ? ` holding ${d.held_item.name}` : "";
+        const move = d.known_move ? ` knowing ${d.known_move.name}` : "";
+        return `${trigger}${lv}${item}${happy}${held}${move}`.trim();
       }
 
       const stats = p.stats.map((s) => s.base_stat);
       const evs = p.stats.map((s) => s.effort);
-      const { nextId, req } = getEvoInfo(e.chain, i);
       const female = s.gender_rate === -1 ? null : (s.gender_rate / 8) * 100;
 
-      await client.query(`
+      await client.query(
+        `
         INSERT INTO pokemon (id, pokedex_number, name, class, legendary, height, weight, primary_type, secondary_type,
         ratio_male, ratio_female, happiness_base, first_game, health, attack, defense, special_attack, special_defense,
         speed, ev_health, ev_attack, ev_defense, ev_special_attack, ev_special_defense, ev_speed, catch_rate, experience_rate,
-        egg_group_i, egg_group_ii, egg_cycle_count, previous_evolution_pokedex_id, next_evolution_pokedex_id, evolution_requirement)
+        egg_group_i, egg_group_ii, egg_cycle_count, previous_evolution_pokedex_id)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22,
-        $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33);
-        `, [
-        p.id, p.id, p.name, s.genera.find((g) => g.language.name === 'en')?.genus, s.is_legendary ? 'Legendary' : 'Standard', p.height / 10,
-        p.weight / 10, p.types[0].type.name, p.types[1]?.type.name || null, female !== null ? 100 - female : null, female,
-        s.base_happiness, s.generation.name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], evs[0], evs[1],
-        evs[2], evs[3], evs[4], evs[5], s.capture_rate, s.growth_rate.name, s.egg_groups[0]?.name || null, s.egg_groups[1]?.name || null,
-        s.hatch_counter, getId(s.evolves_from_species?.url), nextId, req
-      ]);
+        $23, $24, $25, $26, $27, $28, $29, $30, $31);
+        `,
+        [
+          p.id,
+          p.id,
+          p.name,
+          s.genera.find((g) => g.language.name === "en")?.genus,
+          s.is_legendary ? "Legendary" : "Standard",
+          p.height / 10,
+          p.weight / 10,
+          p.types[0].type.name,
+          p.types[1]?.type.name || null,
+          female !== null ? 100 - female : null,
+          female,
+          s.base_happiness,
+          s.generation.name,
+          stats[0],
+          stats[1],
+          stats[2],
+          stats[3],
+          stats[4],
+          stats[5],
+          evs[0],
+          evs[1],
+          evs[2],
+          evs[3],
+          evs[4],
+          evs[5],
+          s.capture_rate,
+          s.growth_rate.name,
+          s.egg_groups[0]?.name || null,
+          s.egg_groups[1]?.name || null,
+          s.hatch_counter,
+          getId(s.evolves_from_species?.url),
+        ],
+      );
+
+      // evo chain
+      const chainId = getId(s.evolution_chain.url);
+      // process evolutions if this is a new chain
+      if (!processedChains.has(chainId)) {
+        const e = (await axios.get(s.evolution_chain.url)).data;
+        const links = getAllEvolutions(e.chain);
+        allEvoLinks.push(...links);
+        processedChains.add(chainId);
+      }
 
       // process moves and junction
       for (const m of p.moves) {
         const mId = getId(m.move.url);
         if (!seenMoves.has(mId)) {
           const md = (await axios.get(m.move.url)).data;
-          await client.query(`INSERT INTO moves (id, name, type, category, power, pp, accuracy) VALUES ($1, $2, $3, $4, $5, $6, $7)`, [mId, md.name, md.type.name, md.damage_class.name, md.power || 0, md.pp, md.accuracy || 0]);
+          await client.query(
+            `INSERT INTO moves (id, name, type, category, power, pp, accuracy) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [
+              mId,
+              md.name,
+              md.type.name,
+              md.damage_class.name,
+              md.power || 0,
+              md.pp,
+              md.accuracy || 0,
+            ],
+          );
           seenMoves.add(mId);
         }
         for (const vd of m.version_group_details) {
-          await client.query(`INSERT INTO pokemon_moves VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING`, [p.id, mId, vd.version_group.name, vd.move_learn_method.name, vd.level_learned || 0]);
+          await client.query(
+            `INSERT INTO pokemon_moves VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING`,
+            [
+              p.id,
+              mId,
+              vd.version_group.name,
+              vd.move_learn_method.name,
+              vd.level_learned || 0,
+            ],
+          );
         }
       }
       await delay(100);
+    }
+
+    console.log("Connecting evolution dots...");
+    for (const link of allEvoLinks) {
+      await client.query(
+        `INSERT INTO evolutions (from_pokemon_id, to_pokemon_id, requirement) VALUES ($1, $2, $3)`,
+        [link.from_id, link.to_id, link.requirement],
+      );
     }
     console.log("Database fully reset and seeded!");
   } catch (e) {

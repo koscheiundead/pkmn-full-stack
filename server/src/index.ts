@@ -34,21 +34,23 @@ app.get("/pokemon/:id/moves", async (req: Request, res: Response) => {
 
 app.get("/pokemon/:id", async (req: Request, res: Response) => {
   try {
-    const query = `SELECT p.*,
-    COALESCE(
+    const query = `SELECT p.*, (
+    SELECT json_agg(json_build_object(
+    'to_id', e.to_pokemon_id,
+    'name', p_to.name,
+    'requirement', e.requirement
+    ))
+    FROM evolutions e
+    JOIN pokemon p_to ON e.to_pokemon_id = p_to.id
+    WHERE e.from_pokemon_id = p.id
+    ) AS next_evolutions,
     (
-      SELECT json_agg(move_data ORDER BY move_data.level_learned ASC)
-      FROM (
-        SELECT m.*, pm.level_learned, pm.learn_method
-        FROM Moves m
-        JOIN Pokemon_Moves pm ON m.id = pm.move_id
-        WHERE pm.pokemon_id = p.id
-      ) move_data
-  ),
-  '[]'::json
-    ) AS moves
-    FROM Pokemon p
-    WHERE p.id = $1`;
+    SELECT json_build_object('id', p_prev.id, 'name', p_prev.name)
+    FROM pokemon p_prev
+    WHERE p_prev.id = p.previous_evolution_pokedex_id
+    ) AS previous_evolution
+    FROM pokemon p
+    WHERE p.id = $1;`;
     const result = await pool.query(query, [req.params.id]);
     if (result.rows.length === 0) {
       res.status(404).json({ status: "failure", error: "Pokémon not found" });

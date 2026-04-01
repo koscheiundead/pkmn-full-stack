@@ -1,27 +1,46 @@
 <script setup lang="ts">
 import axios from "axios";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
+import { useRoute } from 'vue-router';
 import PokemonCard from "./components/PokemonCard.vue";
 import type { Pokemon } from "../../shared/types.ts";
 
+const route = useRoute();
 const error = ref(null);
-const pokemon = ref<Array<Pokemon>>([]);
+const allPokemon = ref<Array<Pokemon>>([]);
+const singlePokemon = ref<Pokemon | null>(null);
+
+async function loadSinglePokemon(id: string | string[]) {
+  const res = await axios.get(`http://127.0.0.1:3000/pokemon/${id}`);
+  if (res.status === 200) {
+    singlePokemon.value = res.data.pokemon;
+  } else {
+    error.value = res.data.error;
+  }
+}
 
 async function loadPokemon() {
   const res = await axios.get("http://127.0.0.1:3000/pokemon");
   if (res.status === 200) {
-    pokemon.value = res.data.pokemon;
+    allPokemon.value = res.data.pokemon;
   } else {
     error.value = res.data.error;
   }
 }
 
 onMounted(loadPokemon);
+
+watch(() => route.params.id, (newId) => {
+  loadSinglePokemon(newId);
+})
 </script>
 
 <template>
-  <div v-if="pokemon.length > 0" class="wrapper">
-    <PokemonCard v-for="poke in pokemon" :pokemon="poke"/>
+  <div v-if="singlePokemon">
+    <PokemonCard :pokemon="singlePokemon"/>
+  </div>
+  <div v-else-if="pokemonList">
+    <PokemonList :pokemon="allPokemon"></PokemonList>
   </div>
 </template>
 

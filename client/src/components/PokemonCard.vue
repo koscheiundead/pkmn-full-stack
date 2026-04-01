@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onBeforeMount } from 'vue';
+import { computed, ref } from 'vue';
 import axios from 'axios';
 import MoveCard from './MoveCard.vue';
 import type { Pokemon, Move } from "../../../shared/types";
@@ -8,7 +8,6 @@ const props = defineProps<{
   pokemon: Pokemon
 }>();
 const error = ref(null);
-const prevEvolution = ref("");
 const moves = ref<Move[]>([]);
 const isExpanded = ref(false);
 const isLoading = ref(false);
@@ -50,27 +49,6 @@ async function toggleMoves() {
     }
   }
 }
-
-onBeforeMount(async () => {
-  isLoading.value = true;
-  if (props.pokemon.previous_evolution_pokedex_id) {
-    try {
-      const res = await axios.get(`http://127.0.0.1:3000/pokemon/${props.pokemon.previous_evolution_pokedex_id}`);
-      if (res.status === 200) {
-        prevEvolution.value = res.data.pokemon.name;
-      }
-    } catch (err) {
-      console.error("Error fetching previous evolution:", err);
-      error.value = err?.message || "Error loading previous evolution.";
-      prevEvolution.value = "";
-    } finally {
-      isLoading.value = false;
-    }
-  } else {
-    prevEvolution.value = "";
-    isLoading.value = false;
-  }
-});
 
 const imgPrimary = computed(() => {
   if (!props.pokemon.primary_type?.trim()) return "";
@@ -127,13 +105,29 @@ const imgSecondary = computed(() => {
         <p>Experience Rate: {{ pokemon.experience_rate }}</p>
         <p>Experience Total: {{ pokemon.experience_total }} EXP</p>
       </div>
-      <div class="data-section">
-        <h4>Evolution</h4>
-        <p v-if="pokemon.previous_evolution_pokedex_id && prevEvolution">Evolves from #{{
-          pokemon.previous_evolution_pokedex_id }} - {{ prevEvolution }}</p>
-        <p v-else>This Pokémon is not known to evolve from another.</p>
-        <p v-if="pokemon.evolution_requirement">Evolution condition(s): {{ pokemon.evolution_requirement }}</p>
-        <p v-else>This Pokémon is not known to evolve into another.</p>
+      <div class="evolution-section" v-if="pokemon.next_evolutions || pokemon.previous_evolution">
+        <h3>Evolution Chain</h3>
+
+        <div class="evolution-container">
+          <div v-if="pokemon.previous_evolution" class="evo-node prev">
+            <button @click="$router.push(`/pokemon/${pokemon.previous_evolution.id}`)">
+              <- {{ pokemon.previous_evolution.name }}
+            </button>
+          </div>
+
+          <div class="evo-node current">
+            <span class="active-tag">Current</span>
+            <strong>{{ name }}</strong>
+          </div>
+
+          <div v-if="pokemon.next_evolutions" class="evo-branches">
+            <div v-for="evo in pokemon.next_evolutions" :key="evo.to_id" class="evo-node next">
+              <div class="arrow">-></div>
+              <div class="requirement-label">{{ evo.requirement }}</div>
+              <button @click="$router.push(`/pokemon/${evo.to_id}`)">{{ evo.name }}</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="abilities-section">
@@ -448,6 +442,46 @@ const imgSecondary = computed(() => {
   line-height: 1.4;
   color: #555;
   font-style: italic;
+}
+
+.evolution-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+}
+
+.evo-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.evo-branches {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.requirement-label {
+  font-size: 0.7rem;
+  font-style: italic;
+  color: #444;
+  background: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.active-tag {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  color: var(--type-color);
+  font-weight: bold;
 }
 
 .stats-container,

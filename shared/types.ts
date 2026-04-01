@@ -39,11 +39,16 @@ export interface Pokemon {
   egg_group_i: string | null;
   egg_group_ii: string | null;
   egg_cycle_count: number | null;
-  previous_evolution_pokedex_id: number | null;
-  next_evolution_pokedex_id: number | null;
-  evolution_requirement: string | null;
+  previous_evolution?: { id: number, name: string };
+  next_evolutions: EvolutionPath[] | null;
   moves?: Move[];
   version_group?: string;
+}
+
+export interface EvolutionPath {
+  to_id: number;
+  name: string;
+  requirement: string;
 }
 
 export interface Move {
