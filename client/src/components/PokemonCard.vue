@@ -11,6 +11,13 @@ const error = ref(null);
 const moves = ref<Move[]>([]);
 const isExpanded = ref(false);
 const isLoading = ref(false);
+const isShiny = ref(false);
+
+const pokemonImg = computed(() => {
+  const baseUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/";
+  const suffix = isShiny.value ? "shiny/" : "";
+  return `${baseUrl}${suffix}${props.pokemon.id}.png`;
+});
 
 const name = computed(() => {
   const pkmn = props.pokemon.name;
@@ -86,6 +93,10 @@ const imgSecondary = computed(() => {
       </div>
     </div>
     <h3 v-if="pokemon.legendary">{{ pokemon.legendary }}</h3>
+    <div id="sprites">
+      <img :src="pokemonImg" :alt="pokemon.name" class="main-sprite" />
+      <button @click="isShiny = !isShiny" class="shiny-toggle" :class="{active: isShiny}">✨</button>
+    </div>
     <div class="data-grid">
       <div class="data-section">
         <h4>Origin & Size</h4>
@@ -105,30 +116,45 @@ const imgSecondary = computed(() => {
         <p>Experience Rate: {{ pokemon.experience_rate }}</p>
         <p>Experience Total: {{ pokemon.experience_total }} EXP</p>
       </div>
+
       <div class="evolution-section" v-if="pokemon.next_evolutions || pokemon.previous_evolution">
-        <h3>Evolution Chain</h3>
+        <h3 class="section-title">Evolution Chain</h3>
 
-        <div class="evolution-container">
-          <div v-if="pokemon.previous_evolution" class="evo-node prev">
-            <button @click="$router.push(`/pokemon/${pokemon.previous_evolution.id}`)">
-              <- {{ pokemon.previous_evolution.name }}
-            </button>
+        <div class="evo-wrapper">
+          <div v-if="pokemon.previous_evolution" class="evo-stage">
+            <router-link :to="`/pokemon/${pokemon.previous_evolution.id}`" class="evo-card">
+              <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.previous_evolution.id}.png`" @error="(e) => e.target.src = '/placeholder-pokeball.png'" :alt="`Prev: ${pokemon.previous_evolution.name}`" />
+              <span class="evo-name">{{ pokemon.previous_evolution.name }}</span>
+            </router-link>
+
+            <div class="arrow">→</div>
           </div>
 
-          <div class="evo-node current">
-            <span class="active-tag">Current</span>
-            <strong>{{ name }}</strong>
-          </div>
-
-          <div v-if="pokemon.next_evolutions" class="evo-branches">
-            <div v-for="evo in pokemon.next_evolutions" :key="evo.to_id" class="evo-node next">
-              <div class="arrow">-></div>
-              <div class="requirement-label">{{ evo.requirement }}</div>
-              <button @click="$router.push(`/pokemon/${evo.to_id}`)">{{ evo.name }}</button>
+          <div class="evo-stage current">
+            <div class="evo-card active">
+              <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`" @error="(e) => e.target.src = '/placeholder-pokeball.png'" :alt="`Current ${pokemon.name}`"/>
+              <span class="evo-name">{{ pokemon.name }}</span>
+              <span class="current-badge">You are here</span>
             </div>
+            <div class="arrow" v-if="pokemon.next_evolutions?.length">→</div>
+          </div>
+
+
+          <div v-if="pokemon.next_evolutions?.length" class="evo-branches">
+            <router-link v-for="evo in pokemon.next_evolutions" :key="evo.to_id" :to="`/pokemon/${evo.to_id}`" class="evo-card branch">
+              <div class="req-bubble">{{ evo.requirement }}</div>
+              <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${evo.to_id}.png`" @error="(e) => e.target.src = '/placeholder-pokeball.png'" />
+              <span class="evo-name">{{ evo.name }}</span>
+            </router-link>
+          </div>
+
+          <div v-else class="final-evolution">
+            <span>Fully Evolved</span>
           </div>
         </div>
+
       </div>
+
     </div>
     <div class="abilities-section">
       <h3>Abilities</h3>
@@ -444,29 +470,6 @@ const imgSecondary = computed(() => {
   font-style: italic;
 }
 
-.evolution-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-}
-
-.evo-node {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.evo-branches {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .requirement-label {
   font-size: 0.7rem;
   font-style: italic;
@@ -583,5 +586,137 @@ h3 {
 .moveset::-webkit-scrollbar-thumb {
   background: var(--type-color);
   border-radius: 10px;
+}
+
+.sprites {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 20px;
+}
+
+.main-sprite {
+  width: 180px;
+  filter: drop-shadow(5px 5px 10px rgba(0,0,0,0.2));
+}
+
+.shiny-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.evolution-section {
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.section-title {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+  color: #444;
+  text-align: center;
+}
+
+.evo-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.evo-stage {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.evo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  background: white;
+  padding: 10px;
+  border-radius: 12px;
+  width: 100px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+  position: relative;
+}
+
+.evo-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+.evo-card.active {
+  border: 2px solid var(--type-color);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.evo-card img {
+  width: 70px;
+  height: 70px;
+}
+
+.evo-name {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #333;
+  text-transform: capitalize;
+}
+
+.evo-arrow {
+  font-size: 1.5rem;
+  color: var(--type-color);
+  font-weight: bold;
+}
+
+.req-bubble {
+  position: absolute;
+  top: -12px;
+  background: var(--type-color);
+  color: white;
+  font-size: 0.6rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.current-badge {
+  font-size: 0.5rem;
+  color: var(--type-color);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.evo-branches {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.final-evolution {
+  font-size: 0.8rem;
+  color: #666;
+  font-style: italic;
+  padding: 10px;
 }
 </style>

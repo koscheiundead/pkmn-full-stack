@@ -3,6 +3,7 @@ import axios from "axios";
 import { ref, onMounted, watch } from "vue";
 import { useRoute } from 'vue-router';
 import PokemonCard from "./components/PokemonCard.vue";
+import PokemonList from "./components/PokemonList.vue";
 import type { Pokemon } from "../../shared/types.ts";
 
 const route = useRoute();
@@ -11,6 +12,7 @@ const allPokemon = ref<Array<Pokemon>>([]);
 const singlePokemon = ref<Pokemon | null>(null);
 
 async function loadSinglePokemon(id: string | string[]) {
+  if (!id) return;
   const res = await axios.get(`http://127.0.0.1:3000/pokemon/${id}`);
   if (res.status === 200) {
     singlePokemon.value = res.data.pokemon;
@@ -39,7 +41,7 @@ watch(() => route.params.id, (newId) => {
   <div v-if="singlePokemon">
     <PokemonCard :pokemon="singlePokemon"/>
   </div>
-  <div v-else-if="pokemonList">
+  <div v-else-if="allPokemon">
     <PokemonList :pokemon="allPokemon"></PokemonList>
   </div>
 </template>
