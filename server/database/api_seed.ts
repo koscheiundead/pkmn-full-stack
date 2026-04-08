@@ -130,15 +130,9 @@ async function resetAndSeed() {
         return [name, abilityCache[name]];
       };
 
-      const [a1n, a1d] = await fetchAbility(
-        p.abilities.find((a) => a.slot === 1),
-      );
-      const [a2n, a2d] = await fetchAbility(
-        p.abilities.find((a) => a.slot === 2),
-      );
-      const [han, had] = await fetchAbility(
-        p.abilities.find((a) => a.is_hidden),
-      );
+      const [a1n, a1d] = await fetchAbility(p.abilities.find((a) => a.slot === 1));
+      const [a2n, a2d] = await fetchAbility(p.abilities.find((a) => a.slot === 2));
+      const [han, had] = await fetchAbility(p.abilities.find((a) => a.is_hidden));
 
       // recursive evolution helper (populating evolutions table)
       function getAllEvolutions(chain, results = []) {
@@ -175,11 +169,12 @@ async function resetAndSeed() {
       await client.query(
         `
         INSERT INTO pokemon (id, pokedex_number, name, class, legendary, height, weight, primary_type, secondary_type,
+        ability_i, ability_i_description, ability_ii, ability_ii_description, hidden_ability, hidden_ability_description,
         ratio_male, ratio_female, happiness_base, first_game, health, attack, defense, special_attack, special_defense,
         speed, ev_health, ev_attack, ev_defense, ev_special_attack, ev_special_defense, ev_speed, catch_rate, experience_rate,
         egg_group_i, egg_group_ii, egg_cycle_count, previous_evolution_pokedex_id)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22,
-        $23, $24, $25, $26, $27, $28, $29, $30, $31);
+        $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37);
         `,
         [
           p.id,
@@ -191,6 +186,12 @@ async function resetAndSeed() {
           p.weight / 10,
           p.types[0].type.name,
           p.types[1]?.type.name || null,
+          a1n,
+          a1d,
+          a2n,
+          a2d,
+          han,
+          had,
           female !== null ? 100 - female : null,
           female,
           s.base_happiness,

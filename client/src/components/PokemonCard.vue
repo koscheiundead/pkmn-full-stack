@@ -70,6 +70,15 @@ const imgSecondary = computed(() => {
   const formattedType = type.charAt(0).toUpperCase() + type.slice(1);
   return `/icons/Pokemon_Type_Icon_${formattedType}.png`;
 });
+
+function cap(str: string) {
+  let words = str.split('-');
+  let result = []
+  for (let word of words) {
+    result.push(word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+  }
+  return result.join(' ');
+}
 </script>
 
 <template>
@@ -95,7 +104,7 @@ const imgSecondary = computed(() => {
     <h3 v-if="pokemon.legendary">{{ pokemon.legendary }}</h3>
     <div id="sprites">
       <img :src="pokemonImg" :alt="pokemon.name" class="main-sprite" />
-      <button @click="isShiny = !isShiny" class="shiny-toggle" :class="{active: isShiny}">✨</button>
+      <button @click="isShiny = !isShiny" class="shiny-toggle" :class="{ active: isShiny }">✨</button>
     </div>
     <div class="data-grid">
       <div class="data-section">
@@ -123,7 +132,10 @@ const imgSecondary = computed(() => {
         <div class="evo-wrapper">
           <div v-if="pokemon.previous_evolution" class="evo-stage">
             <router-link :to="`/pokemon/${pokemon.previous_evolution.id}`" class="evo-card">
-              <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.previous_evolution.id}.png`" @error="(e) => e.target.src = '/placeholder-pokeball.png'" :alt="`Prev: ${pokemon.previous_evolution.name}`" />
+              <img
+                :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.previous_evolution.id}.png`"
+                @error="(e) => e.target.src = '/placeholder-pokeball.png'"
+                :alt="`Prev: ${pokemon.previous_evolution.name}`" />
               <span class="evo-name">{{ pokemon.previous_evolution.name }}</span>
             </router-link>
 
@@ -132,7 +144,8 @@ const imgSecondary = computed(() => {
 
           <div class="evo-stage current">
             <div class="evo-card active">
-              <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`" @error="(e) => e.target.src = '/placeholder-pokeball.png'" :alt="`Current ${pokemon.name}`"/>
+              <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`"
+                @error="(e) => e.target.src = '/placeholder-pokeball.png'" :alt="`Current ${pokemon.name}`" />
               <span class="evo-name">{{ pokemon.name }}</span>
               <span class="current-badge">You are here</span>
             </div>
@@ -141,9 +154,11 @@ const imgSecondary = computed(() => {
 
 
           <div v-if="pokemon.next_evolutions?.length" class="evo-branches">
-            <router-link v-for="evo in pokemon.next_evolutions" :key="evo.to_id" :to="`/pokemon/${evo.to_id}`" class="evo-card branch">
+            <router-link v-for="evo in pokemon.next_evolutions" :key="evo.to_id" :to="`/pokemon/${evo.to_id}`"
+              class="evo-card branch">
               <div class="req-bubble">{{ evo.requirement }}</div>
-              <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${evo.to_id}.png`" @error="(e) => e.target.src = '/placeholder-pokeball.png'" />
+              <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${evo.to_id}.png`"
+                @error="(e) => e.target.src = '/placeholder-pokeball.png'" />
               <span class="evo-name">{{ evo.name }}</span>
             </router-link>
           </div>
@@ -161,30 +176,23 @@ const imgSecondary = computed(() => {
       <div class="ability-list">
         <div class="ability-slot">
           <div class="ability-header">
-            <span class="ability-name">{{ pokemon.ability_i }}</span><span class="ability-tag">Primary</span>
+            <span class="ability-name">{{ cap(pokemon.ability_i) }}</span><span class="ability-tag">Primary</span>
           </div>
           <p class="ability-desc">{{ pokemon.ability_i_description }}</p>
         </div>
 
         <div v-if="pokemon.ability_ii" class="ability-slot">
           <div class="ability-header">
-            <span class="ability-name">{{ pokemon.ability_ii }}</span><span class="ability-tag">Secondary</span>
+            <span class="ability-name">{{ cap(pokemon.ability_ii) }}</span><span class="ability-tag">Secondary</span>
           </div>
           <p class="ability-desc">{{ pokemon.ability_ii_description }}</p>
         </div>
 
         <div v-if="pokemon.hidden_ability" class="ability-slot hidden">
           <div class="ability-header">
-            <span class="ability-name">{{ pokemon.hidden_ability }}</span><span class="ability-tag">Hidden</span>
+            <span class="ability-name">{{ cap(pokemon.hidden_ability) }}</span><span class="ability-tag">Hidden</span>
           </div>
           <p class="ability-desc">{{ pokemon.hidden_ability_description }}</p>
-        </div>
-
-        <div v-if="pokemon.special_event_ability" class="ability-slot special">
-          <div class="ability-header">
-            <span class="ability-name">{{ pokemon.special_event_ability }}</span><span class="ability-tag">Event</span>
-          </div>
-          <p class="ability-desc">{{ pokemon.special_event_ability_description }}</p>
         </div>
       </div>
     </div>
@@ -193,14 +201,14 @@ const imgSecondary = computed(() => {
         <h3>Base Stats</h3>
         <div class="stat-grid">
           <div class="stat-row"><span class="label">Base Happiness</span><span class="value">{{ pokemon.happiness_base
-              }}</span></div>
+          }}</span></div>
           <div class="stat-row"><span class="label">Health</span><span class="value">{{ pokemon.health }}</span></div>
           <div class="stat-row"><span class="label">Attack</span><span class="value">{{ pokemon.attack }}</span></div>
           <div class="stat-row"><span class="label">Defense</span><span class="value">{{ pokemon.defense }}</span></div>
           <div class="stat-row"><span class="label">Special Attack</span><span class="value">{{ pokemon.special_attack
-              }}</span></div>
+          }}</span></div>
           <div class="stat-row"><span class="label">Special Defense</span><span class="value">{{ pokemon.special_defense
-              }}</span>
+          }}</span>
           </div>
           <div class="stat-row"><span class="label">Speed</span><span class="value">{{ pokemon.speed }}</span></div>
           <div class="stat-row total"><span class="label">Total</span><span class="value">{{ totalStats }}</span>
@@ -222,7 +230,8 @@ const imgSecondary = computed(() => {
       </div>
     </div>
     <div class="moveset">
-      <button @click="toggleMoves" :class="['expand-btn', isExpanded ? 'is-open' : '']">{{ isExpanded ? "Hide Moves" : "Show Moves" }}</button>
+      <button @click="toggleMoves" :class="['expand-btn', isExpanded ? 'is-open' : '']">{{ isExpanded ? "Hide Moves" :
+        "Show Moves" }}</button>
       <div v-if="isLoading">Loading...</div>
       <div v-else-if="isExpanded && moves.length === 0">No moves found.</div>
       <div v-else-if="isExpanded && moves.length > 0" class="moves-list">
@@ -434,7 +443,8 @@ const imgSecondary = computed(() => {
   transform: translateX(5px);
 }
 
-.ability-slot.hidden, .ability-slot.special {
+.ability-slot.hidden,
+.ability-slot.special {
   border-left-style: dashed;
   background: rgba(255, 255, 255, 0.3);
 }
@@ -563,7 +573,8 @@ h3 {
 }
 
 .expand-btn:hover {
-  filter: brightness(1.1); /* slight glow effect */
+  filter: brightness(1.1);
+  /* slight glow effect */
 }
 
 .expand-btn:active {
@@ -580,9 +591,11 @@ h3 {
   padding-right: 10px;
   margin-top: 15px;
 }
+
 .moveset::-webkit-scrollbar {
   width: 6px;
 }
+
 .moveset::-webkit-scrollbar-thumb {
   background: var(--type-color);
   border-radius: 10px;
@@ -601,7 +614,7 @@ h3 {
 
 .main-sprite {
   width: 180px;
-  filter: drop-shadow(5px 5px 10px rgba(0,0,0,0.2));
+  filter: drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.2));
 }
 
 .shiny-toggle {
@@ -656,13 +669,13 @@ h3 {
   border-radius: 12px;
   width: 100px;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
   position: relative;
 }
 
 .evo-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
 .evo-card.active {

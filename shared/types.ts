@@ -39,10 +39,10 @@ export interface Pokemon {
   egg_group_i: string | null;
   egg_group_ii: string | null;
   egg_cycle_count: number | null;
-  previous_evolution?: { id: number, name: string };
-  next_evolutions: EvolutionPath[] | null;
-  moves?: Move[];
   version_group?: string;
+  previous_evolution?: { id: number, name: string };
+  next_evolutions?: EvolutionPath[];
+  moves?: Move[];
 }
 
 export interface EvolutionPath {
