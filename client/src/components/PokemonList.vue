@@ -65,7 +65,7 @@ onMounted(loadPokemon);
   </div>
 
   <div v-if="pokemon.length > 0" class="wrapper">
-    <PokemonCard v-for="poke in pokemon" :pokemon="poke" />
+    <PokemonCard v-for="poke in pokemon" :id="String(poke.id)" />
   </div>
 </template>
 

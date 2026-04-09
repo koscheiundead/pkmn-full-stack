@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { cap } from '../utils/stringUtils';
 import type { Move } from "../../../shared/types";
 
 const props = defineProps<{ move: Move }>();
@@ -9,7 +10,7 @@ const props = defineProps<{ move: Move }>();
     <div class="move-header">
       <span class="method-badge">#{{ move.learn_method === 'level-up' ? `Lvl ${move.level_learned}` : move.learn_method.toUpperCase()}}</span>
 
-      <h3 class="move-name">{{ move.name }}</h3>
+      <h3 class="move-name">{{ cap(move.name) }}</h3>
       <span class="move-category">{{ move.category }}</span>
     </div>
 
