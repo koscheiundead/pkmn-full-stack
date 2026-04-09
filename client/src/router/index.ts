@@ -6,13 +6,13 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    component: PokemonList
+    component: PokemonList,
   },
   {
     path: '/pokemon/:id',
     name: 'pokemon-detail',
     component: PokemonCard,
-    props: true // allows :id to be passed as a prop to component
+    props: true, // allows :id to be passed as a prop to component
   }
 ];
 

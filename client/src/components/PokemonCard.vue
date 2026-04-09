@@ -3,8 +3,8 @@ import { computed, ref, onBeforeMount } from 'vue';
 import axios from 'axios';
 import MoveCard from './MoveCard.vue';
 import { cap, formatGeneration } from '../utils/stringUtils';
-import type { Pokemon, Move, PokemonType } from "../../../shared/types";
-import { TYPE_COLORS } from "../../../shared/types";
+import type { Pokemon, Move, PokemonType } from "@shared/types";
+import { TYPE_COLORS } from "@shared/types";
 
 const props = defineProps<{
   id: string,
@@ -127,42 +127,54 @@ const generationLabel = computed(() => {
   </div>
 
   <!-- main card -->
-  <article v-else-if="pokemon" class="dex-card" :class="`type-${pokemon.primary_type}`" :aria-label="`Pokédex entry for ${cap(pokemon.name)}`">
+  <article v-else-if="pokemon" class="dex-card" :class="`type-${pokemon.primary_type}`"
+    :aria-label="`Pokédex entry for ${cap(pokemon.name)}`">
     <!-- header -->
     <header class="dex-header">
       <div class="dex-identity">
-        <span class="dex-num" aria-label="Pokédex number">No. {{ String(pokemon.pokedex_number).padStart(4, '0') }}</span>
+        <span class="dex-num" aria-label="Pokédex number">No. {{ String(pokemon.pokedex_number).padStart(4, '0')
+          }}</span>
         <h1 class="dex-name">{{ cap(pokemon.name) }}</h1>
-        <p class="dex-class">{{ pokemon.class }} <span v-if="pokemon.form" class="form-tag" aria-label="Form">({{ pokemon.form }})</span></p>
+        <p class="dex-class">{{ pokemon.class }} <span v-if="pokemon.form" class="form-tag" aria-label="Form">({{
+          pokemon.form }})</span></p>
       </div>
 
       <div class="dex-meta-right">
         <!-- type badge -->
         <div class="type-row" role="list" :aria-label="`Type${pokemon.secondary_type ? 's' : ''}`">
-          <span class="type-pill" role="listitem" :style="typeBadgeStyle(pokemon.primary_type as PokemonType)">{{ cap(pokemon.primary_type) }}</span>
-          <span v-if="pokemon.secondary_type" class="type-pill" role="listitem" :style="typeBadgeStyle(pokemon.secondary_type as PokemonType)">{{ cap(pokemon.secondary_type) }}</span>
+          <span class="type-pill" role="listitem" :style="typeBadgeStyle(pokemon.primary_type as PokemonType)">{{
+            cap(pokemon.primary_type) }}</span>
+          <span v-if="pokemon.secondary_type" class="type-pill" role="listitem"
+            :style="typeBadgeStyle(pokemon.secondary_type as PokemonType)">{{ cap(pokemon.secondary_type) }}</span>
         </div>
 
         <!-- legendary badge-->
-        <span v-if="pokemon.legendary !== 'Standard'" class="legendary-badge" :class="pokemon.legendary?.toLowerCase()" :aria-label="pokemon.legendary + ' Pokémon'">{{ pokemon.legendary }}</span>
+        <span v-if="pokemon.legendary !== 'Standard'" class="legendary-badge" :class="pokemon.legendary?.toLowerCase()"
+          :aria-label="pokemon.legendary + ' Pokémon'">{{ pokemon.legendary }}</span>
       </div>
     </header>
 
     <!-- sprite zone -->
     <section class="dex-sprite-zone" aria-label="Sprite">
-      <img :src="mainSprite" :alt="`${cap(pokemon.name)}${isShiny ? ' shiny' : ''} sprite`" class="dex-sprite" width="96" height="96" />
-      <button class="shiny-toggle" :class="{active: isShiny}" :aria-pressed="isShiny" :aria-label="isShiny ? 'Viewing shiny sprite, click to switch to normal' : 'Viewing normal sprite, click to switch to shiny'" @click="isShiny = !isShiny">✨</button>
+      <img :src="mainSprite" :alt="`${cap(pokemon.name)}${isShiny ? ' shiny' : ''} sprite`" class="dex-sprite"
+        width="96" height="96" />
+      <button class="shiny-toggle" :class="{ active: isShiny }" :aria-pressed="isShiny"
+        :aria-label="isShiny ? 'Viewing shiny sprite, click to switch to normal' : 'Viewing normal sprite, click to switch to shiny'"
+        @click="isShiny = !isShiny">✨</button>
     </section>
 
     <!-- evolution chain -->
-    <section v-if="pokemon.previous_evolution || pokemon.next_evolutions?.length" class="dex-section" aria-label="Evolution chain">
+    <section v-if="pokemon.previous_evolution || pokemon.next_evolutions?.length" class="dex-section"
+      aria-label="Evolution chain">
       <h2 class="section-label">Evolution chain</h2>
       <div class="evo-chain" role="list">
         <!-- previous -->
         <div v-if="pokemon.previous_evolution" class="evo-stage" role="listitem">
-          <router-link :to="`/pokemon/${pokemon.previous_evolution.id}`" class="evo-node" :aria-label="`Go to ${pokemon.previous_evolution.name}`">
-            <img :src="spriteUrl(pokemon.previous_evolution.id)" :alt="cap(pokemon.previous_evolution.name)" width="48" height="48" @error="($event.target as HTMLImageElement).src = '/placeholder-pokeball.png'" />
-            <span class="evo-name">{{cap(pokemon.previous_evolution.name)}}</span>
+          <router-link :to="`/pokemon/${pokemon.previous_evolution.id}`" class="evo-node"
+            :aria-label="`Go to ${pokemon.previous_evolution.name}`">
+            <img :src="spriteUrl(pokemon.previous_evolution.id)" :alt="cap(pokemon.previous_evolution.name)" width="48"
+              height="48" @error="($event.target as HTMLImageElement).src = '/placeholder-pokeball.png'" />
+            <span class="evo-name">{{ cap(pokemon.previous_evolution.name) }}</span>
           </router-link>
           <span class="evo-arrow" aria-hidden="true">→</span>
         </div>
@@ -170,8 +182,9 @@ const generationLabel = computed(() => {
         <!-- current -->
         <div class="evo-stage current" role="listitem" aria-current="true">
           <div class="evo-node active">
-            <img :src="spriteUrl(pokemon.id)" :alt="`${cap(pokemon.name)} (current)`" width="64" height="64" @error="($event.target as HTMLImageElement).src = '/placeholder-pokeball.png'" />
-            <span class="evo-name">{{cap(pokemon.name)}}</span>
+            <img :src="spriteUrl(pokemon.id)" :alt="`${cap(pokemon.name)} (current)`" width="64" height="64"
+              @error="($event.target as HTMLImageElement).src = '/placeholder-pokeball.png'" />
+            <span class="evo-name">{{ cap(pokemon.name) }}</span>
             <span class="current-badge" aria-hidden="true">▲ current</span>
           </div>
           <span v-if="pokemon.next_evolutions?.length" class="evo-arrow" aria-hidden="true">→</span>
@@ -179,10 +192,12 @@ const generationLabel = computed(() => {
 
         <!-- next evolution(s) (may branch) -->
         <div v-if="pokemon.next_evolutions?.length" class="evo-branches" role="listitem">
-          <router-link v-for="evo in pokemon.next_evolutions" :key="evo.to_id" :to="`/pokemon/${evo.to_id}`" class="evo-node branch" :aria-label="`Evolves to ${evo.name}: ${evo.requirement}`">
+          <router-link v-for="evo in pokemon.next_evolutions" :key="evo.to_id" :to="`/pokemon/${evo.to_id}`"
+            class="evo-node branch" :aria-label="`Evolves to ${evo.name}: ${evo.requirement}`">
             <span class="req-bubble" aria-hidden="true">{{ evo.requirement }}</span>
-            <img :src="spriteUrl(evo.to_id)" :alt="cap(evo.name)" width="48" height="48" @error="($event.target as HTMLImageElement).src = '/placeholder-pokeball.png'" />
-            <span class="evo-name">{{cap(evo.name)}}</span>
+            <img :src="spriteUrl(evo.to_id)" :alt="cap(evo.name)" width="48" height="48"
+              @error="($event.target as HTMLImageElement).src = '/placeholder-pokeball.png'" />
+            <span class="evo-name">{{ cap(evo.name) }}</span>
           </router-link>
         </div>
 
@@ -198,16 +213,19 @@ const generationLabel = computed(() => {
       <dl class="stat-grid">
         <div v-for="stat in STAT_ROWS" :key="stat.key" class="stat-row">
           <dt class="stat-label">{{ stat.label }}</dt>
-          <dd class="stat-val">{{ pokemon[stat.key] ?? '-'}}</dd>
-          <div class="stat-track" role="progressbar" :aria-valuenow="(pokemon[stat.key] as number) ?? 0" :aria-valuemin="0" :aria-valuemax="STAT_MAX" :aria-label="`${stat.label}: ${pokemon[stat.key] ?? 0} out of ${STAT_MAX}`">
-            <div class="stat-fill" :style="{width: `${(((pokemon[stat.key] as number) ?? 0) / STAT_MAX) * 100}%`, backgroundColor: STAT_COLORS[stat.key]}" />
+          <dd class="stat-val">{{ pokemon[stat.key] ?? '-' }}</dd>
+          <div class="stat-track" role="progressbar" :aria-valuenow="(pokemon[stat.key] as number) ?? 0"
+            :aria-valuemin="0" :aria-valuemax="STAT_MAX"
+            :aria-label="`${stat.label}: ${pokemon[stat.key] ?? 0} out of ${STAT_MAX}`">
+            <div class="stat-fill"
+              :style="{ width: `${(((pokemon[stat.key] as number) ?? 0) / STAT_MAX) * 100}%`, backgroundColor: STAT_COLORS[stat.key] }" />
           </div>
         </div>
 
         <!-- total row -->
         <div class="stat-row total">
           <dt class="stat-label">Total</dt>
-          <dd class="stat-val">{{totalStats}}</dd>
+          <dd class="stat-val">{{ totalStats }}</dd>
           <div class="stat-track" aria-hidden="true" />
         </div>
       </dl>
@@ -251,11 +269,12 @@ const generationLabel = computed(() => {
         </div>
         <div class="info-chip">
           <dt class="chip-label">Egg groups</dt>
-          <dd class="chip-val">{{ cap(pokemon.egg_group_i) }}<span v-if="pokemon.egg_group_ii">, {{ pokemon.egg_group_ii }}</span></dd>
+          <dd class="chip-val">{{ cap(pokemon.egg_group_i) }}<span v-if="pokemon.egg_group_ii">, {{ pokemon.egg_group_ii
+              }}</span></dd>
         </div>
         <div class="info-chip" v-if="pokemon.ratio_male !== null">
           <dt class="chip-label">Gender ratio</dt>
-          <dd class="chip-val">{{ pokemon.ratio_male }}% male / {{ pokemon.ratio_female }}% female</dd>
+          <dd class="chip-val">{{ pokemon.ratio_male }}% ♂ / {{ pokemon.ratio_female }}% ♀</dd>
         </div>
         <div class="info-chip" v-else>
           <dt class="chip-label">Gender</dt>
@@ -296,7 +315,8 @@ const generationLabel = computed(() => {
     <section v-if="activeEvRows.length" class="dex-section" aria-label="EV yield">
       <h2 class="section-label">EV yield</h2>
       <ul class="ev-chips" role="list">
-        <li v-for="ev in activeEvRows" :key="ev.key" class="ev-chip" role="listitem">{{ ev.label }} +{{ pokemon[ev.key] }}</li>
+        <li v-for="ev in activeEvRows" :key="ev.key" class="ev-chip" role="listitem">{{ ev.label }} +{{ pokemon[ev.key]
+          }}</li>
         <li class="ev-chip total" role="listitem">Total +{{ totalEvYield }}</li>
       </ul>
     </section>
@@ -304,17 +324,18 @@ const generationLabel = computed(() => {
     <!-- moves -->
     <section class="dex-section moveset" aria-label="Learnset">
       <h2 class="section-label">Moveset</h2>
-      <button class="expand-btn" :class="{'is-open': isExpanded}" :aria-expanded="isExpanded" aria-controls="moveset-list" @click="toggleMoves">
+      <button class="expand-btn" :class="{ 'is-open': isExpanded }" :aria-expanded="isExpanded"
+        aria-controls="moveset-list" @click="toggleMoves">
         {{ isExpanded ? 'Hide moves' : 'Show moves' }}
+        <span class="expand-chevron" aria-hidden="true">{{ isExpanded ? '▲' : '▼' }}</span>
       </button>
-      <span class="expand-chevron" aria-hidden="true">{{ isExpanded ? '▲' : '▼' }}</span>
 
       <div id="moveset-list" role="region" :aria-label="`Move list for ${cap(pokemon.name)}`">
         <div v-if="isLoadingMoves" class="moves-loading" role="status" aria-live="polite">Loading moves...</div>
         <p v-else-if="isExpanded && !isLoadingMoves && moves.length === 0" role="status">No moves found.</p>
-        <ul v-else-if="isExpanded && moves.lenght > 0" class="moves-list" role="list">
+        <ul v-else-if="isExpanded && moves.length > 0" class="moves-list" role="list">
           <li v-for="move in moves" :key="move.id" role="listitem">
-            <MoveCard :move />
+            <MoveCard :move="move" />
           </li>
         </ul>
       </div>
@@ -343,22 +364,26 @@ const generationLabel = computed(() => {
   margin-bottom: 16px;
 }
 
+.dex-header.dex-identity {
+  flex-direction: row;
+}
+
 .dex-num {
-  font-size: 11px;
+  font-size: 0.9rem;
   letter-spacing: 2px;
   color: var(--color-text-secondary);
   display: block;
 }
 
 .dex-name {
-  font-size: 22px;
+  font-size: 2rem;
   font-weight: 500;
   margin: 2px 0;
   line-height: 1.2;
 }
 
 .dex-class {
-  font-size: 12px;
+  font-size: 1.5rem;
   color: var(--color-text-secondary);
   margin: 0;
   letter-spacing: 0.5px;
@@ -382,7 +407,7 @@ const generationLabel = computed(() => {
 }
 
 .type-pill {
-  font-size: 11px;
+  font-size: 1rem;
   font-weight: 500;
   padding: 3px 10px;
   border-radius: 20px;
@@ -392,7 +417,7 @@ const generationLabel = computed(() => {
 
 /* legendary badge */
 .legendary-badge {
-  font-size: 10px;
+  font-size: 0.85rem;
   letter-spacing: 1.5px;
   padding: 2px 8px;
   border-radius: var(--border-radius-md);
@@ -403,6 +428,7 @@ const generationLabel = computed(() => {
   background: #faeeda;
   color: #854f0b;
 }
+
 .legendary-badge.mythical {
   background: #eee8ff;
   color: #534ab7;
@@ -424,6 +450,7 @@ const generationLabel = computed(() => {
   image-rendering: pixelated;
   display: block;
 }
+
 .shiny-toggle {
   width: 36px;
   height: 36px;
@@ -431,7 +458,7 @@ const generationLabel = computed(() => {
   border: 1.5px solid var(--color-border-secondary);
   background: var(--color-background-primary);
   cursor: pointer;
-  font-size: 16px;
+  font-size: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -450,7 +477,7 @@ const generationLabel = computed(() => {
 
 /* section label */
 .section-label {
-  font-size: 10px;
+  font-size: 0.8rem;
   letter-spacing: 2px;
   color: var(--color-text-secondary);
   font-weight: 500;
@@ -475,7 +502,7 @@ const generationLabel = computed(() => {
 }
 
 .stat-label {
-  font-size: 11px;
+  font-size: 0.7rem;
   color: var(--color-text-secondary);
   width: 80px;
   text-align: right;
@@ -483,7 +510,7 @@ const generationLabel = computed(() => {
 }
 
 .stat-val {
-  font-size: 11px;
+  font-size: 0.7rem;
   font-weight: 500;
   width: 28px;
   margin: 0;
@@ -525,13 +552,15 @@ const generationLabel = computed(() => {
   gap: 8px;
   margin: 0;
 }
+
 .info-chip {
   background: var(--color-background-secondary);
   border-radius: var(--border-radius-md);
   padding: 8px 10px;
 }
+
 .chip-label {
-  font-size: 10px;
+  font-size: 0.8rem;
   color: var(--color-text-secondary);
   letter-spacing: 1px;
   margin: 0 0 2px;
@@ -539,7 +568,7 @@ const generationLabel = computed(() => {
 }
 
 .chip-val {
-  font-size: 13px;
+  font-size: 1rem;
   color: var(--color-text-primary);
   font-weight: 500;
   margin: 0;
@@ -571,13 +600,13 @@ const generationLabel = computed(() => {
 }
 
 .ability-name {
-  font-size: 13px;
+  font-size: 1rem;
   font-weight: 500;
   color: var(--color-text-primary);
 }
 
 .ability-tag {
-  font-size: 10px;
+  font-size: 0.8rem;
   padding: 1px 7px;
   border-radius: 10px;
   background: var(--color-background-secondary);
@@ -590,7 +619,7 @@ const generationLabel = computed(() => {
 }
 
 .ability-desc {
-  font-size: 12px;
+  font-size: 0.8rem;
   color: var(--color-text-secondary);
   margin: 0;
   line-height: 1.5;
@@ -616,7 +645,7 @@ const generationLabel = computed(() => {
   align-items: center;
   text-decoration: none;
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: 1rem;
   gap: 3px;
   padding: 4px;
   border-radius: var(--border-radius-md);
@@ -638,21 +667,21 @@ const generationLabel = computed(() => {
 }
 
 .evo-name {
-  font-size: 11px;
+  font-size: 1rem;
 }
 
 .evo-arrow {
   color: var(--color-text-secondary);
-  font-size: 14px;
+  font-size: 2rem;
 }
 
 .current-badge {
-  font-size: 9px;
+  font-size: 0.8rem;
   color: #0f6e56;
 }
 
 .req-bubble {
-  font-size: 9px;
+  font-size: 0.6rem;
   color: var(--color-text-secondary);
   max-width: 64px;
   text-align: center;
@@ -666,7 +695,7 @@ const generationLabel = computed(() => {
 }
 
 .evo-final {
-  font-size: 11px;
+  font-size: 0.8rem;
   color: var(--color-text-secondary);
   font-style: italic;
 }
@@ -682,7 +711,7 @@ const generationLabel = computed(() => {
 }
 
 .ev-chip {
-  font-size: 11px;
+  font-size: 1rem;
   padding: 3px 9px;
   background: var(--color-background-secondary);
   border: 0.5px solid var(--color-background-secondary);
@@ -704,7 +733,7 @@ const generationLabel = computed(() => {
   border: 0.5px solid var(--color-border-secondary);
   border-radius: var(--border-radius-md);
   font-family: inherit;
-  font-size: 12px;
+  font-size: 1rem;
   letter-spacing: 0.5px;
   cursor: pointer;
   color: var(--color-text-primary);
@@ -722,7 +751,7 @@ const generationLabel = computed(() => {
 }
 
 .expand-chevron {
-  font-size: 10px;
+  font-size: 1rem;
 }
 
 .moves-list {
@@ -735,7 +764,7 @@ const generationLabel = computed(() => {
 }
 
 .moves-loading {
-  font-size: 12px;
+  font-size: 0.8rem;
   color: var(--color-text-secondary);
   padding: 8px 0;
 }
@@ -749,7 +778,7 @@ const generationLabel = computed(() => {
   background: var(--color-background-danger);
   border-radius: var(--border-radius-md);
   color: var(--color-text-danger);
-  font-size: 13px;
+  font-size: 1.1rem;
 }
 
 .dex-error-icon {
@@ -762,7 +791,7 @@ const generationLabel = computed(() => {
   align-items: center;
   justify-content: center;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 1.05rem;
   flex-shrink: 0;
 }
 
@@ -791,10 +820,14 @@ const generationLabel = computed(() => {
 }
 
 @keyframes dex-pulse {
-  0%, 80%, 100% {
+
+  0%,
+  80%,
+  100% {
     transform: scale(0.6);
     opacity: 0.4;
   }
+
   40% {
     transform: scale(1.0);
     opacity: 1;

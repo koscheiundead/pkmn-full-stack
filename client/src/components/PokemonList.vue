@@ -2,7 +2,7 @@
 import axios from "axios";
 import { ref, onMounted, watch } from "vue";
 import PokemonCard from "./PokemonCard.vue";
-import type { Pokemon } from "../../shared/types.ts";
+import type { Pokemon } from "@shared/types.ts";
 
 const error = ref(null);
 const pokemon = ref<Array<Pokemon>>([]);
@@ -12,6 +12,7 @@ const totalPages = ref(1);
 const searchQuery = ref('');
 
 async function loadPokemon() {
+  pokemon.value = null;
   const res = await axios.get("http://127.0.0.1:3000/pokemon", {
     params: {
       page: currentPage.value,
@@ -21,6 +22,7 @@ async function loadPokemon() {
   });
   if (res.status === 200) {
     pokemon.value = res.data.pokemon;
+    console.log(pokemon.value);
     totalPages.value = res.data.pagination.totalPages;
   } else {
     error.value = res.data.error;
@@ -64,7 +66,7 @@ onMounted(loadPokemon);
     </div>
   </div>
 
-  <div v-if="pokemon.length > 0" class="wrapper">
+  <div v-if="pokemon?.length > 0" class="wrapper">
     <PokemonCard v-for="poke in pokemon" :id="String(poke.id)" />
   </div>
 </template>

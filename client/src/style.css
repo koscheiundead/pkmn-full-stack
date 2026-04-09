@@ -26,10 +26,103 @@
   --pokedex-glass-blue: #00e5ff;
   --pokedex-gold: #ffcc00;
   --pokedex-green: ##51ae5f;
+
+  /* backgrounds */
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f4f3f0;
+  --color-background-tertiary: #eceae5;
+  --color-background-info: #e6f1fb;
+  --color-background-danger: #fcebeb;
+  --color-background-success: #eaf3de;
+  --color-background-warning: #faeeda;
+
+  /* text */
+  --color-text-primary: #1a1a18;
+  --color-text-secondary: #5f5e5a;
+  --color-text-tertiary: #888780;
+  --color-text-info: #185fa5;
+  --color-text-danger: #a32d2d;
+  --color-text-success: #0f6e56;
+  --color-text-warning: #854f0b;
+
+  /* borders */
+  --color-border-primary: rgba(26, 26, 24, 0.4);
+  --color-border-secondary: rgba(26, 26, 24, 0.3);
+  --color-border-tertiary: rgba(26, 26, 24, 0.15);
+  --color-border-info: #378add;
+  --color-border-danger: #e24b4a;
+  --color-border-success: #639922;
+  --color-border-warning: #ba7517;
+
+  /* radius */
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+
+  /* typography */
+  --font-sans: "Courier New", Courier, monospace;
+  --font-serif: Georgia, "Times New Roman", serif;
+  --font-mono: "Courier New", Courier, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* backgrounds */
+    --color-background-primary: #1a1a18;
+    --color-background-secondary: #242421;
+    --color-background-tertiary: #2c2c2a;
+    --color-background-info: #042c53;
+    --color-background-danger: #501313;
+    --color-background-success: #04342c;
+    --color-background-warning: #412402;
+
+    /* text */
+    --color-text-primary: #f1efe8;
+    --color-text-secondary: #b4b2a9;
+    --color-text-tertiary: #888780;
+    --color-text-info: #85b7eb;
+    --color-text-danger: #f09595;
+    --color-text-success: #5dcaa5;
+    --color-text-warning: #ef9f27;
+
+    /* borders */
+    --color-border-primary: rgba(241, 239, 232, 0.4);
+    --color-border-secondary: rgba(241, 239, 232, 0.3);
+    --color-border-tertiary: rgba(241, 239, 232, 0.15);
+    --color-border-info: #378add;
+    --color-border-danger: #e24b4a;
+    --color-border-success: #639922;
+    --color-border-warning: #ba7517;
+  }
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body {
-  background-color: #333;
-  font-gamily: 'Press Start 2P', cursive, sans-serif;
   margin: 0;
+  font-family: var(--font-sans);
+  background: var(--color-background-tertiary);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-background-info);
+  outline-offset: 2px;
 }
